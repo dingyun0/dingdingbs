@@ -43,6 +43,17 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
         return await response_base.fail(msg=str(e))
 
 
+@router.get('/getAllInfo', summary='获取所有用户信息')
+async def get_all_user_info(page: int = 1, page_size: int = 10):
+    """
+    获取所有用户信息（分页）
+    :param page: 页码，默认1
+    :param page_size: 每页数量，默认10
+    """
+    print(f"接收到的分页参数 - page: {page}, page_size: {page_size}")
+    data = await UserService.get_all_user_info(page, page_size)
+    return await response_base.success(data=data)
+
 
 @router.get('/getRoutes', summary='获取用户路由权限')
 async def get_user_routes(current_user: User = Depends(get_current_user)):
@@ -51,13 +62,13 @@ async def get_user_routes(current_user: User = Depends(get_current_user)):
         # 根据用户角色返回对应的路由权限
         routes = {
             'admin': [
-                "0", "1", "11", "12", "13", "2", "21", "22", "23", "24", 
+                "0", "1", "11", "12", "2", "21", "22", "23", "24", 
                 "25", "26", "27", "28", "29", "291", "292", "3", "31", 
                 "32", "33", "34", "4", "41", "42", "5", "7", "6", "61", 
                 "62", "63", "64", "65", "66"
             ],
             'teacher': ["0"],
-            'student': ["0", "1", "11", "12", "13", "66"]
+            'student': ["0", "1", "11", "12", "66"]
         }
         
         # 获取用户角色

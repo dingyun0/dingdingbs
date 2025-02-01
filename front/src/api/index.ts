@@ -28,3 +28,12 @@ export const registerReq = (registerInfo: any) => {
     data: registerInfo,
   });
 };
+
+// 获取所有用户信息
+export const userAllInfoReq = (params: any) => {
+  return request({
+    url: "/users/getAllInfo",
+    method: "get",
+    params: params,
+  });
+};

@@ -61,7 +61,7 @@ import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import { getRouterReq, loginReq, userInfoReq } from "@/api";
-import { setToken } from "@/utils/auth";
+import { useUserStore } from "@/store/user";
 
 interface LoginInfo {
   username: string;
@@ -88,6 +88,7 @@ const rules: FormRules = {
 };
 const permiss = usePermissStore();
 const login = ref<FormInstance>();
+const userStore = useUserStore();
 const loginFunc = () => {
   loginReq(param)
     .then(async ({ data }) => {
@@ -95,24 +96,35 @@ const loginFunc = () => {
 
       if (data.code === 200) {
         ElMessage.success("登录成功");
-        setToken(data.data.token);
-        localStorage.setItem("vuems_name", param.username);
+
+        // 使用 user store 存储 token 和用户名
+        userStore.setToken(data.data.token);
+        userStore.setUsername(param.username);
 
         try {
           // 获取用户信息
           const userInfo = await userInfoReq();
           console.log("用户信息:", userInfo);
 
+          // 存储用户信息到 store
+          if (userInfo.data && userInfo.data.data) {
+            userStore.setUserInfo(userInfo.data.data);
+          }
+
           // 获取路由权限
           const routeInfo = await getRouterReq();
           console.log("获取到的路由信息:", routeInfo.data);
-          console.log("12312", routeInfo.data.data.routes);
 
           // 设置权限
           if (routeInfo.data.data && routeInfo.data.data.routes) {
-            console.log("111111111111");
-
             permiss.handleSet(routeInfo.data.data.routes);
+          }
+
+          // 记住密码功能
+          if (checked.value) {
+            localStorage.setItem("login-param", JSON.stringify(param));
+          } else {
+            localStorage.removeItem("login-param");
           }
 
           router.push("/");
