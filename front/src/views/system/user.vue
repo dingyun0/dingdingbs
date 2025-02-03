@@ -13,14 +13,6 @@
         :page-change="changePage"
         :editFunc="handleEdit"
       >
-        <template #toolbarBtn>
-          <el-button
-            type="warning"
-            :icon="CirclePlusFilled"
-            @click="visible = true"
-            >新增</el-button
-          >
-        </template>
       </TableCustom>
     </div>
     <el-dialog
@@ -51,14 +43,15 @@
 
 <script setup lang="ts" name="system-user">
 import { ref, reactive } from "vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { CirclePlusFilled } from "@element-plus/icons-vue";
 import { User } from "@/types/user";
-import { userAllInfoReq } from "@/api";
+import { userAllInfoReq, updateUserRoleReq, deleteUserReq } from "@/api";
 import TableCustom from "@/components/table-custom.vue";
 import TableDetail from "@/components/table-detail.vue";
 import TableSearch from "@/components/table-search.vue";
 import { FormOption, FormOptionList } from "@/types/form-option";
+import TableEdit from "@/components/table-edit.vue";
 
 // 查询相关
 const query = reactive({
@@ -119,29 +112,56 @@ let options = ref<FormOption>({
   labelWidth: "100px",
   span: 12,
   list: [
-    { type: "input", label: "用户名", prop: "name", required: true },
-    { type: "input", label: "手机号", prop: "phone", required: true },
-    { type: "input", label: "密码", prop: "password", required: true },
-    { type: "input", label: "邮箱", prop: "email", required: true },
-    { type: "input", label: "角色", prop: "role", required: true },
+    {
+      type: "select",
+      label: "角色",
+      prop: "roles",
+      required: true,
+      options: [
+        { label: "管理员", value: "admin" },
+        { label: "教师", value: "teacher" },
+        { label: "学生", value: "student" },
+      ],
+    },
   ],
 });
 const visible = ref(false);
 const isEdit = ref(false);
 const rowData = ref({});
+
+// 编辑用户
 const handleEdit = (row: User) => {
-  rowData.value = { ...row };
+  console.log("当前用户数据:", row);
+  rowData.value = {
+    id: row.id,
+    roles: row.roles,
+  };
+  console.log("rowData:", rowData.value);
   isEdit.value = true;
   visible.value = true;
 };
-const updateData = () => {
-  closeDialog();
-  getData();
+
+// 更新数据
+const updateData = async (formData: any) => {
+  try {
+    console.log("提交的表单数据:", formData);
+    await updateUserRoleReq({
+      id: formData.id,
+      roles: formData.roles,
+    });
+    ElMessage.success("更新角色成功");
+    closeDialog();
+    getData();
+  } catch (error) {
+    console.error("更新角色失败:", error);
+    ElMessage.error("更新角色失败");
+  }
 };
 
 const closeDialog = () => {
   visible.value = false;
   isEdit.value = false;
+  rowData.value = {};
 };
 
 // 查看详情弹窗相关
@@ -158,36 +178,52 @@ const handleView = (row: User) => {
       label: "用户ID",
     },
     {
-      prop: "name",
+      prop: "username",
       label: "用户名",
     },
     {
-      prop: "password",
-      label: "密码",
-    },
-    {
-      prop: "email",
-      label: "邮箱",
-    },
-    {
-      prop: "phone",
-      label: "电话",
-    },
-    {
-      prop: "role",
+      prop: "roles",
       label: "角色",
     },
     {
-      prop: "date",
-      label: "注册日期",
+      prop: "joined_time",
+      label: "注册时间",
+    },
+    {
+      prop: "last_login_time",
+      label: "最后登录时间",
+    },
+    {
+      prop: "uuid",
+      label: "用户UID",
     },
   ];
   visible1.value = true;
 };
 
 // 删除相关
-const handleDelete = (row: User) => {
-  ElMessage.success("删除成功");
+const handleDelete = async (row: User) => {
+  try {
+    await ElMessageBox.confirm(
+      `确认删除用户 ${row.username} 吗？此操作不可恢复！`,
+      "警告",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }
+    );
+
+    await deleteUserReq(row.id);
+    ElMessage.success("删除成功");
+    // 重新获取数据
+    getData();
+  } catch (error) {
+    if (error !== "cancel") {
+      console.error("删除用户失败:", error);
+      ElMessage.error("删除用户失败");
+    }
+  }
 };
 </script>
 

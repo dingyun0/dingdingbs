@@ -219,7 +219,7 @@ const handleDelete = (row) => {
     type: "warning",
   })
     .then(async () => {
-      props.delFunc(row);
+      await props.delFunc(row);
     })
     .catch(() => {});
 };

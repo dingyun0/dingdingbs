@@ -96,5 +96,11 @@ class UserDao(DaoBase[User, CreateUser, UpdateUser]):
         """获取分页用户数据"""
         return await self.model.all().offset(offset).limit(limit)
 
+    @atomic()
+    async def update_user_role(self, user_id: int, roles: str) -> int:
+        """更新用户角色"""
+        print("444")
+        return await self.model.filter(id=user_id).update(roles=roles)
+
 
 UserDao: UserDao = UserDao(User)

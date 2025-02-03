@@ -138,4 +138,16 @@ CUSTOM_USAGE_ERROR_MESSAGES = {
 
 
 class SchemaBase(BaseModel):
-    model_config = ConfigDict(use_enum_values=True)
+    """基础模型类"""
+    model_config = ConfigDict(
+        # 允许从 ORM 模型创建
+        from_attributes=True,
+        # 允许额外字段
+        extra='ignore',
+        # 序列化时保持字段名称不变
+        alias_generator=None,
+        # 验证赋值
+        validate_assignment=True,
+        # 允许字段推导
+        populate_by_name=True
+    )

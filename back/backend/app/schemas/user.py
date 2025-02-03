@@ -3,7 +3,7 @@
 import datetime
 
 from email_validator import EmailNotValidError, validate_email
-from pydantic import UUID4, ConfigDict, EmailStr, field_validator
+from pydantic import UUID4, ConfigDict, EmailStr, field_validator, BaseModel
 
 from backend.app.schemas.base import SchemaBase
 
@@ -69,3 +69,9 @@ class ResetPassword(SchemaBase):
     code: str
     password1: str
     password2: str
+
+
+class UpdateUserRole(SchemaBase):
+    """更新用户角色请求体"""
+    id: str
+    roles: str
