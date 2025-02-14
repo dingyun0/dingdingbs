@@ -55,6 +55,47 @@ class UserService:
         # 生成token
         access_token = await jwt.create_access_token(user.pk)
         return access_token, user
+    
+    @staticmethod
+    async def get_all_user_info(page: int = 1, page_size: int = 10):
+        """获取所有用户信息（分页）"""
+        try:
+            # 计算偏移量
+            offset = (page - 1) * page_size
+            print(f"分页参数 - 页码: {page}, 每页条数: {page_size}, 偏移量: {offset}")
+            
+            # 获取总数
+            total = await UserDao.get_user_count()
+            print(f"总记录数: {total}")
+            
+            # 使用 UserDao 获取分页后的用户
+            users = await UserDao.get_user_page(offset, page_size)
+            
+            # 将用户对象转换为字典列表
+            user_list = []
+            for user in users:
+                user_dict = {
+                    'id': str(user.id),
+                    'username': str(user.username),
+                    'roles': str(user.roles),
+                    'joined_time': user.joined_time.strftime('%Y-%m-%d %H:%M:%S') if user.joined_time else None,
+                    'last_login_time': user.last_login_time.strftime('%Y-%m-%d %H:%M:%S') if user.last_login_time else None,
+                    'uuid': str(user.uuid)
+                }
+                user_list.append(user_dict)
+            
+            result = {
+                'list': user_list,
+                'total': total,
+                'page': page,
+                'page_size': page_size
+            }
+            print(f"返回的分页数据: {result}")
+            return result
+        
+        except Exception as e:
+            print("获取所有用户信息错误:", str(e))
+            raise errors.CustomError(msg=f'获取用户信息失败: {str(e)}')
 
     @staticmethod
     async def login_captcha(*, obj: Auth2, request: Request):
@@ -245,10 +286,10 @@ class UserService:
         count = await UserDao.delete_avatar(input_user.id)
         return count
 
-    @staticmethod
-    async def get_user_list():
-        data = await UserDao.get_all()
-        return data.order_by('-id')
+    # @staticmethod
+    # async def get_user_list():
+    #     data = await UserDao.get_all()
+    #     return data.order_by('-id')
 
     @staticmethod
     async def update_permission(pk: int):
@@ -494,4 +535,81 @@ class UserService:
             routes.extend([admin_routes])
         
         return routes
+                        
+    @staticmethod
+    async def update_user(user_id: int, user_data: dict):
+        """更新用户信息"""
+        try:
+            user = await UserDao.get_user_by_id(user_id)
+            if not user:
+                raise errors.NotFoundError(msg='用户不存在')
+            
+            count = await UserDao.update(user_id, user_data)
+            return count
+        except Exception as e:
+            print("更新用户信息错误:", str(e))
+            raise errors.CustomError(msg=f'更新用户信息失败: {str(e)}')
+
+    @staticmethod
+    async def get_user_detail(user_id: int):
+        """获取用户详情"""
+        try:
+            user = await UserDao.get_user_by_id(user_id)
+            if not user:
+                raise errors.NotFoundError(msg='用户不存在')
+            
+            return {
+                'id': str(user.id),
+                'username': str(user.username),
+                'roles': str(user.roles),
+                'joined_time': user.joined_time.strftime('%Y-%m-%d %H:%M:%S') if user.joined_time else None,
+                'last_login_time': user.last_login_time.strftime('%Y-%m-%d %H:%M:%S') if user.last_login_time else None
+            }
+        except Exception as e:
+            print("获取用户详情错误:", str(e))
+            raise errors.CustomError(msg=f'获取用户详情失败: {str(e)}')
+
+    @staticmethod
+    async def update_user_role(user_id: int, roles: str):
+        """更新用户角色"""
+        try:
+            # 验证角色是否合法
+            valid_roles = ["admin", "teacher", "student"]
+            if roles not in valid_roles:
+                raise errors.ValidationError(msg=f"无效的角色值: {roles}")
+            
+            # 检查用户是否存在
+            user = await UserDao.get_user_by_id(user_id)
+            if not user:
+                raise errors.NotFoundError(msg='用户不存在')
+            
+            # 更新角色
+            count = await UserDao.update_user_role(user_id, roles)
+            print("222",count)
+            if count == 0:
+                raise errors.UpdateError(msg='更新角色失败')
+            
+            return count
+        except Exception as e:
+            print("更新用户角色错误:", str(e))
+            raise errors.CustomError(msg=f'更新用户角色失败: {str(e)}')
+
+    @staticmethod
+    async def delete_user(user_id: int) -> int:
+        """删除用户"""
+        try:
+            # 检查用户是否存在
+            user = await UserDao.get_user_by_id(user_id)
+            if not user:
+                raise errors.NotFoundError(msg='用户不存在')
+            
+            # 删除用户
+            count = await UserDao.delete_user(user_id)
+            if count == 0:
+                raise errors.DeleteError(msg='删除用户失败')
+            
+            return count
+        except Exception as e:
+            print("删除用户错误:", str(e))
+            raise errors.CustomError(msg=f'删除用户失败: {str(e)}')
                         

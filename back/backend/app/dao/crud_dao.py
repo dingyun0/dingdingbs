@@ -16,6 +16,9 @@ class UserDao(DaoBase[User, CreateUser, UpdateUser]):
 
     async def get_user_by_username(self, name: str) -> User:
         return await self.model.filter(username=name).first()
+    
+    async def get_all_user_info(self):
+        return await self.model.all()
 
     @atomic()
     async def update_user_login_time(self, pk: int) -> int:
@@ -84,6 +87,20 @@ class UserDao(DaoBase[User, CreateUser, UpdateUser]):
     @atomic()
     async def delete_user(self, pk: int) -> int:
         return await self.delete(pk)
+
+    async def get_user_count(self) -> int:
+        """获取用户总数"""
+        return await self.model.all().count()
+    
+    async def get_user_page(self, offset: int, limit: int):
+        """获取分页用户数据"""
+        return await self.model.all().offset(offset).limit(limit)
+
+    @atomic()
+    async def update_user_role(self, user_id: int, roles: str) -> int:
+        """更新用户角色"""
+        print("444")
+        return await self.model.filter(id=user_id).update(roles=roles)
 
 
 UserDao: UserDao = UserDao(User)

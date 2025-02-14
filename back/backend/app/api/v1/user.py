@@ -8,7 +8,7 @@ from backend.app.models.user import User
 from backend.app.common.jwt import CurrentUser, DependsJwtUser, get_current_user
 from backend.app.common.pagination import DependsPagination, paging_data
 from backend.app.common.response.response_schema import response_base
-from backend.app.schemas.user import CreateUser,UserInfo,Auth,GetUserInfo, ResetPassword, UpdateUser
+from backend.app.schemas.user import CreateUser,UserInfo,Auth,GetUserInfo, ResetPassword, UpdateUser, UpdateUserRole
 from backend.app.services.user_service import UserService
 
 router = APIRouter()
@@ -43,6 +43,17 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
         return await response_base.fail(msg=str(e))
 
 
+@router.get('/getAllInfo', summary='获取所有用户信息')
+async def get_all_user_info(page: int = 1, page_size: int = 10):
+    """
+    获取所有用户信息（分页）
+    :param page: 页码，默认1
+    :param page_size: 每页数量，默认10
+    """
+    print(f"接收到的分页参数 - page: {page}, page_size: {page_size}")
+    data = await UserService.get_all_user_info(page, page_size)
+    return await response_base.success(data=data)
+
 
 @router.get('/getRoutes', summary='获取用户路由权限')
 async def get_user_routes(current_user: User = Depends(get_current_user)):
@@ -51,13 +62,13 @@ async def get_user_routes(current_user: User = Depends(get_current_user)):
         # 根据用户角色返回对应的路由权限
         routes = {
             'admin': [
-                "0", "1", "11", "12", "13", "2", "21", "22", "23", "24", 
+                "0", "1", "11", "12", "2", "21", "22", "23", "24", 
                 "25", "26", "27", "28", "29", "291", "292", "3", "31", 
                 "32", "33", "34", "4", "41", "42", "5", "7", "6", "61", 
                 "62", "63", "64", "65", "66"
             ],
             'teacher': ["0"],
-            'student': ["0", "1", "11", "12", "13", "66"]
+            'student': ["0", "1", "11", "12", "66"]
         }
         
         # 获取用户角色
@@ -72,6 +83,12 @@ async def get_user_routes(current_user: User = Depends(get_current_user)):
         print("获取路由权限错误:", str(e))
         return await response_base.fail(msg=str(e))
 
+@router.put("/update")
+async def update_user_role(user_data: UpdateUserRole):
+    """更新用户角色"""
+    print("1111",user_data)
+    count = await UserService.update_user_role(user_data.id, user_data.roles)
+    return await response_base.success(data=count, msg="更新角色成功")
 
 @router.post('/password/reset/code', summary='获取密码重置验证码', description='可以通过用户名或者邮箱重置密码')
 async def password_reset_captcha(username_or_email: str, response: Response):
@@ -143,15 +160,17 @@ async def status_set(pk: int):
     return await response_base.fail()
 
 
-@router.delete(
-    '/{username}',
-    summary='用户注销',
-    description='用户注销 != 用户退出，注销之后用户将从数据库删除',
-    dependencies=[DependsJwtUser],
-)
-async def delete_user(username: str, current_user: CurrentUser):
-    count = await UserService.delete(username=username, current_user=current_user)
-    if count > 0:
-        return await response_base.success(msg='用户注销成功')
-    return await response_base.fail()
+@router.delete("/{user_id}")
+async def delete_user(user_id: int):
+    """删除用户"""
+    try:
+        count = await UserService.delete_user(user_id)
+        if count == 0:
+            return await response_base.fail(msg="用户不存在")
+        return await response_base.success(msg="删除成功")
+    except Exception as e:
+        return await response_base.fail(msg=f"删除失败: {str(e)}")
+
+
+
 
