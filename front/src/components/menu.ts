@@ -158,8 +158,8 @@ export const menuData: Menus[] = [
   {
     id: "5",
     icon: "Guide",
-    index: "/icon",
-    title: "图标",
+    index: "/announcement",
+    title: "公告",
     permiss: "5",
   },
   {

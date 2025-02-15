@@ -96,14 +96,16 @@ const routes: RouteRecordRaw[] = [
       },
 
       {
-        path: "/icon",
-        name: "icon",
+        path: "/announcement",
+        name: "announcement",
         meta: {
           title: "图标",
           permiss: "5",
         },
         component: () =>
-          import(/* webpackChunkName: "icon" */ "../views/pages/icon.vue"),
+          import(
+            /* webpackChunkName: "icon" */ "../views/pages/announcement.vue"
+          ),
       },
       {
         path: "/ucenter",
