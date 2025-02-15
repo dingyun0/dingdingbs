@@ -25,6 +25,7 @@ TORTOISE_ORM = {
     'apps': {
         'models': {  # 这是 app 名称
             'models': [
+                'backend.app.models.announcement',
                 'backend.app.models.user',  # 用户模型
                 'aerich.models'     # aerich 需要的模型
             ],
