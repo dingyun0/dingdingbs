@@ -158,7 +158,7 @@ const routes: RouteRecordRaw[] = [
           permiss: "33",
         },
         component: () =>
-          import(/* webpackChunkName: "import" */ "../views/table/import.vue"),
+          import(/* webpackChunkName: "import" */ "../views/pages/import.vue"),
       },
       {
         path: "/theme",
@@ -179,7 +179,7 @@ const routes: RouteRecordRaw[] = [
         },
         component: () =>
           import(
-            /* webpackChunkName: "calendar" */ "../views/element/calendar.vue"
+            /* webpackChunkName: "calendar" */ "../views/pages/session.vue"
           ),
       },
       {

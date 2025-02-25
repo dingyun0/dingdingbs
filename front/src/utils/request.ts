@@ -10,6 +10,7 @@ const service = axios.create({
 // 请求拦截器
 service.interceptors.request.use(
   (config) => {
+    console.log("请求拦截器:", config.url, config.data);
     const token = getToken();
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
@@ -25,10 +26,11 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   (response) => {
+    console.log("响应拦截器:", response.data);
     return response;
   },
   (error) => {
-    console.error("响应错误:", error);
+    console.error("响应错误:", error.response?.data);
     if (error.response) {
       switch (error.response.status) {
         case 401:
