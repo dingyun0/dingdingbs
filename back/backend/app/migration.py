@@ -27,6 +27,9 @@ TORTOISE_ORM = {
             'models': [
                 'backend.app.models.announcement',
                 'backend.app.models.user',  # 用户模型
+                'backend.app.models.score',  # 成绩模型
+                'backend.app.models.session',  # 
+                'backend.app.models.comprehensive_test',
                 'aerich.models'     # aerich 需要的模型
             ],
             'default_connection': 'default',
