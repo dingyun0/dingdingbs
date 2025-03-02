@@ -80,7 +80,7 @@ class UserService:
                     'roles': str(user.roles),
                     'joined_time': user.joined_time.strftime('%Y-%m-%d %H:%M:%S') if user.joined_time else None,
                     'last_login_time': user.last_login_time.strftime('%Y-%m-%d %H:%M:%S') if user.last_login_time else None,
-                    'uuid': str(user.uuid)
+                    'sno':str(user.sno) if user.sno else None
                 }
                 user_list.append(user_dict)
             
@@ -115,29 +115,29 @@ class UserService:
 
     @staticmethod
     async def register(obj: CreateUser):
-        """用户注册"""
         try:
-            # 验证验证码
-            # redis_code = await redis_client.get(f'captcha:{obj.uuid}')
-            # if not redis_code:
-            #     raise errors.ForbiddenError(msg='验证码失效，请重新获取')
-            # if redis_code.lower() != obj.code.lower():
-            #     raise errors.CustomError(error=CustomCode.CAPTCHA_ERROR)
-            
+            # 验证学号是否已存在
+            if obj.sno:
+                existing_user = await UserDao.get_user_by_sno(obj.sno)
+                if existing_user:
+                    raise errors.CustomError("该学号已被注册")
+
             # 验证用户名是否已存在
-            username = await UserDao.get_user_by_username(name=obj.username)
-            if username:
-                raise errors.ForbiddenError(msg='该用户名已被注册')
-            
-            # 验证两次密码是否一致
-            # if obj.password != obj.confirmPassword:
-            #     raise errors.ForbiddenError(msg='两次输入的密码不一致')
-            
-            # 注册用户
-            await UserDao.register_user(obj)
-            
+            existing_user = await UserDao.get_user_by_username(obj.username)
+            if existing_user:
+                raise errors.CustomError("该用户名已存在")
+
+            # 创建用户（密码加密在DAO层处理）
+            await UserDao.create_user(
+                username=obj.username,
+                password=obj.password,
+                sno=obj.sno
+            )
+            return True
         except Exception as e:
-            raise errors.ForbiddenError(msg=str(e))
+            if isinstance(e, errors.CustomError):
+                raise e
+            raise errors.CustomError(f"注册失败: {str(e)}")
 
     @staticmethod
     async def get_pwd_rest_captcha(*, username_or_email: str, response: Response):
@@ -212,6 +212,7 @@ class UserService:
                 'id': user.id,
                 'username': user.username,
                 'roles': user.roles,
+                'sno': user.sno if user.sno else None,
                 'joined_time': user.joined_time.strftime('%Y-%m-%d %H:%M:%S') if user.joined_time else None,
                 'last_login_time': user.last_login_time.strftime('%Y-%m-%d %H:%M:%S') if user.last_login_time else None
             }
@@ -583,16 +584,20 @@ class UserService:
             if not user:
                 raise errors.NotFoundError(msg='用户不存在')
             
-            # 更新角色
-            count = await UserDao.update_user_role(user_id, roles)
-            print("222",count)
+            # 如果角色是老师或管理员，将学号设置为 null
+            update_data = {"roles": roles}
+            if roles in ["admin", "teacher"]:
+                update_data["sno"] = None
+            
+            # 更新角色和学号
+            count = await UserDao.update_user_role(user_id, update_data)
             if count == 0:
                 raise errors.UpdateError(msg='更新角色失败')
             
             return count
         except Exception as e:
             print("更新用户角色错误:", str(e))
-            raise errors.CustomError(msg=f'更新用户角色失败: {str(e)}')
+            raise errors.CustomError(msg=f"更新用户角色失败: {str(e)}")
 
     @staticmethod
     async def delete_user(user_id: int) -> int:
@@ -612,4 +617,30 @@ class UserService:
         except Exception as e:
             print("删除用户错误:", str(e))
             raise errors.CustomError(msg=f'删除用户失败: {str(e)}')
+
+    @staticmethod
+    async def get_users(page: int = 1, page_size: int = 10):
+        try:
+            # 获取用户总数
+            total = await User.all().count()
+            
+            # 获取分页数据
+            users = await User.all().offset((page - 1) * page_size).limit(page_size)
+            
+            # 构造返回数据
+            user_list = [{
+                "id": user.id,
+                "username": user.username,
+                "sno": user.sno,  # 添加学号字段
+                "roles": user.roles,
+                "joined_time": user.joined_time.strftime("%Y-%m-%d %H:%M:%S") if user.joined_time else None,
+                "last_login_time": user.last_login_time.strftime("%Y-%m-%d %H:%M:%S") if user.last_login_time else None
+            } for user in users]
+            
+            return {
+                "list": user_list,
+                "total": total
+            }
+        except Exception as e:
+            raise errors.CustomError(f"获取用户列表失败: {str(e)}")
                         

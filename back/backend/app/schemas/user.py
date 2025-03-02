@@ -30,6 +30,7 @@ class CreateUser(SchemaBase):
     username: str
     password: str
     confirmPassword: str
+    sno:str
 
 class UserInfo(SchemaBase):
     username: str

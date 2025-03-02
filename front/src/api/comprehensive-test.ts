@@ -14,3 +14,10 @@ export const getComprehensiveTestAll = () => {
     method: "get",
   });
 };
+
+export const getStudentTestBySno = (sno: string) => {
+  return request({
+    url: `/comprehensive-tests/student/${sno}`,
+    method: "get",
+  });
+};

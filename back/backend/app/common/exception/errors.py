@@ -23,10 +23,16 @@ class HTTPError(HTTPException):
         super().__init__(status_code=code, detail=msg, headers=headers)
 
 
-class CustomError(BaseExceptionMixin):
-    def __init__(self, *, error: CustomCode, data: Any = None, background: BackgroundTask | None = None):
-        self.code = error.code
-        super().__init__(msg=error.msg, data=data, background=background)
+class CustomError(Exception):
+    def __init__(self, message: str = None):
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+
+class ValidationError(CustomError):
+    pass
 
 
 class RequestError(BaseExceptionMixin):
@@ -36,18 +42,12 @@ class RequestError(BaseExceptionMixin):
         super().__init__(msg=msg, data=data, background=background)
 
 
-class ForbiddenError(BaseExceptionMixin):
-    code = 403
-
-    def __init__(self, *, msg: str = 'Forbidden', data: Any = None, background: BackgroundTask | None = None):
-        super().__init__(msg=msg, data=data, background=background)
+class ForbiddenError(CustomError):
+    pass
 
 
-class NotFoundError(BaseExceptionMixin):
-    code = 404
-
-    def __init__(self, *, msg: str = 'Not Found', data: Any = None, background: BackgroundTask | None = None):
-        super().__init__(msg=msg, data=data, background=background)
+class NotFoundError(CustomError):
+    pass
 
 
 class ServerError(BaseExceptionMixin):

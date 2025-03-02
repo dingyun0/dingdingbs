@@ -15,6 +15,15 @@
             </template>
           </el-input>
         </el-form-item>
+        <el-form-item prop="sno">
+          <el-input v-model="param.sno" placeholder="学号">
+            <template #prepend>
+              <el-icon>
+                <Document />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
         <el-form-item prop="password">
           <el-input
             type="password"
@@ -72,6 +81,7 @@ const param = reactive<Register>({
   username: "",
   password: "",
   confirmPassword: "",
+  sno: "",
 });
 
 const rules: FormRules = {
@@ -84,6 +94,7 @@ const rules: FormRules = {
   ],
   password: [{ required: true, message: "请输入密码", trigger: "blur" }],
   email: [{ required: true, message: "请输入邮箱", trigger: "blur" }],
+  sno: [{ required: true, message: "请输入学号", trigger: "blur" }],
 };
 const register = ref<FormInstance>();
 const registerFunc = () => {

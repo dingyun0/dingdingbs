@@ -7,6 +7,7 @@ from backend.app.common import jwt
 from backend.app.dao.base import DaoBase
 from backend.app.models.user import User
 from backend.app.schemas.user import CreateUser, UpdateUser
+from backend.app.common.exception.errors import CustomError
 
 
 class UserDao(DaoBase[User, CreateUser, UpdateUser]):
@@ -96,11 +97,31 @@ class UserDao(DaoBase[User, CreateUser, UpdateUser]):
         """获取分页用户数据"""
         return await self.model.all().offset(offset).limit(limit)
 
-    @atomic()
-    async def update_user_role(self, user_id: int, roles: str) -> int:
-        """更新用户角色"""
-        print("444")
-        return await self.model.filter(id=user_id).update(roles=roles)
+    @staticmethod
+    async def update_user_role(user_id: int, update_data: dict):
+        """更新用户角色和相关信息"""
+        try:
+            return await User.filter(id=user_id).update(**update_data)
+        except Exception as e:
+            raise CustomError(f"更新用户角色失败: {str(e)}")
+    
+    @staticmethod
+    async def get_user_by_sno(sno: str):
+        """通过学号获取用户"""
+        return await User.filter(sno=sno).first()
 
+    @staticmethod
+    async def create_user(username: str, password: str, sno: str = None):
+        """创建用户"""
+        try:
+            # 对密码进行加密
+            hashed_password = await jwt.get_hash_password(password)
+            return await User.create(
+                username=username,
+                password=hashed_password,  # 使用加密后的密码
+                sno=sno
+            )
+        except Exception as e:
+            raise CustomError(f"创建用户失败: {str(e)}")
 
 UserDao: UserDao = UserDao(User)

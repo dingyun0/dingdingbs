@@ -15,6 +15,7 @@ class User(Model):
     username = fields.CharField(max_length=32, unique=True, description='用户名')
     password = fields.CharField(max_length=255, description='密码')
     roles = fields.CharField(max_length=255, default="student", description='角色')
+    sno = fields.CharField(max_length=50, null=True, unique=True, description='学号')
     joined_time = fields.DatetimeField(auto_now_add=True, description='注册时间')
     last_login_time = fields.DatetimeField(null=True, description='上次登录时间')
 
@@ -35,3 +36,4 @@ class User(Model):
 
     class Meta:
         table = 'user'
+        table_description = "用户表"

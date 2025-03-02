@@ -194,8 +194,8 @@ const handleView = (row: User) => {
       label: "最后登录时间",
     },
     {
-      prop: "uuid",
-      label: "用户UID",
+      prop: "sno",
+      label: "学号",
     },
   ];
   visible1.value = true;

@@ -10,6 +10,7 @@ from backend.app.common.pagination import DependsPagination, paging_data
 from backend.app.common.response.response_schema import response_base
 from backend.app.schemas.user import CreateUser,UserInfo,Auth,GetUserInfo, ResetPassword, UpdateUser, UpdateUserRole
 from backend.app.services.user_service import UserService
+from backend.app.common.exception.errors import CustomError
 
 router = APIRouter()
 
@@ -23,10 +24,16 @@ async def create_user(obj: CreateUser):
             "msg": "用户注册成功",
             "data": None
         }
+    except CustomError as e:
+        return {
+            "code": 400,  # 使用更合适的错误码
+            "msg": str(e),
+            "data": None
+        }
     except Exception as e:
         return {
             "code": 500,
-            "msg": str(e),
+            "msg": f"服务器错误: {str(e)}",
             "data": None
         }
 
@@ -68,8 +75,8 @@ async def get_user_routes(current_user: User = Depends(get_current_user)):
                 "62", "63", "64", "65", "66"
             ],
             'teacher': ["0"],
-            'student': ["0", "1", "11", "12", "66"]
-        }
+            'student': ["0", "1", "11", "12", "2", "21", "22", "23", "24", 
+                "25"]        }
         
         # 获取用户角色
         user_role = current_user.roles  # 假设用户模型中有role字段
