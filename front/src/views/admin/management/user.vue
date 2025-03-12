@@ -46,7 +46,12 @@ import { ref, reactive } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { CirclePlusFilled } from "@element-plus/icons-vue";
 import { User } from "@/types/user";
-import { userAllInfoReq, updateUserRoleReq, deleteUserReq } from "@/api";
+import {
+  userAllInfoReq,
+  updateUserRoleReq,
+  deleteUserReq,
+  updateTeacherRoleReq,
+} from "@/api";
 import TableCustom from "@/components/table-custom.vue";
 import TableDetail from "@/components/table-detail.vue";
 import TableSearch from "@/components/table-search.vue";
@@ -107,6 +112,78 @@ const changePage = async (val: number) => {
   await getData();
 };
 
+// 监听角色选择变化
+const handleRoleChange = (value: string) => {
+  console.log("角色变更为:", value);
+
+  if (value === "teacher") {
+    options.value.list = [
+      {
+        type: "select",
+        label: "角色",
+        prop: "roles",
+        required: true,
+        options: [
+          { label: "管理员", value: "admin" },
+          { label: "教师", value: "teacher" },
+          { label: "学生", value: "student" },
+        ],
+        change: handleRoleChange,
+      },
+      {
+        type: "input",
+        label: "教师ID",
+        prop: "teacher_id",
+        required: true,
+        placeholder: "请输入教师ID",
+      },
+      {
+        type: "select",
+        label: "学院",
+        prop: "department",
+        required: true,
+        options: [
+          { label: "计算机学院", value: "计算机学院" },
+          { label: "信息工程学院", value: "信息工程学院" },
+        ],
+      },
+      {
+        type: "select",
+        label: "专业",
+        prop: "major",
+        required: true,
+        options: [
+          { label: "计算机科学与技术", value: "计算机科学与技术" },
+          { label: "软件工程", value: "软件工程" },
+        ],
+      },
+      {
+        type: "input",
+        label: "职称",
+        prop: "title",
+        required: false,
+        placeholder: "请输入职称",
+      },
+    ];
+  } else {
+    // 如果不是教师角色，只保留角色选择
+    options.value.list = [
+      {
+        type: "select",
+        label: "角色",
+        prop: "roles",
+        required: true,
+        options: [
+          { label: "管理员", value: "admin" },
+          { label: "教师", value: "teacher" },
+          { label: "学生", value: "student" },
+        ],
+        change: handleRoleChange,
+      },
+    ];
+  }
+};
+
 // 新增/编辑弹窗相关
 let options = ref<FormOption>({
   labelWidth: "100px",
@@ -122,6 +199,7 @@ let options = ref<FormOption>({
         { label: "教师", value: "teacher" },
         { label: "学生", value: "student" },
       ],
+      change: handleRoleChange,
     },
   ],
 });
@@ -139,22 +217,41 @@ const handleEdit = (row: User) => {
   console.log("rowData:", rowData.value);
   isEdit.value = true;
   visible.value = true;
+
+  // 手动触发角色变更
+  setTimeout(() => {
+    if (row.roles === "teacher") {
+      handleRoleChange("teacher");
+    }
+  }, 100);
 };
 
 // 更新数据
 const updateData = async (formData: any) => {
   try {
-    console.log("提交的表单数据:", formData); // 调试用
-    await updateUserRoleReq({
-      id: formData.id,
-      roles: formData.roles,
-    });
-    ElMessage.success("更新角色成功");
-    closeDialog();
+    if (formData.roles === "teacher") {
+      // 更新用户角色和教师信息
+      await updateTeacherRoleReq({
+        id: formData.id,
+        roles: formData.roles,
+        department: formData.department,
+        major: formData.major,
+        title: formData.title,
+      });
+    } else {
+      // 仅更新用户角色
+      await updateUserRoleReq({
+        id: formData.id,
+        roles: formData.roles,
+      });
+    }
+
+    ElMessage.success("更新成功");
+    visible.value = false;
     getData();
   } catch (error) {
-    console.error("更新角色失败:", error);
-    ElMessage.error("更新角色失败");
+    console.error("更新失败:", error);
+    ElMessage.error("更新失败");
   }
 };
 

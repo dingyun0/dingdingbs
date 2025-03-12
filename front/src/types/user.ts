@@ -14,6 +14,10 @@ export interface Register {
   password: string;
   confirmPassword: string;
   sno: string;
+  department: string;
+  major: string;
+  grade: string;
+  class_name: string;
 }
 
 export interface Login {

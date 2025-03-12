@@ -25,27 +25,51 @@ const routes: RouteRecordRaw[] = [
           import(/* webpackChunkName: "dashboard" */ "../views/dashboard.vue"),
       },
       {
-        path: "/system-user",
-        name: "system-user",
+        path: "/management-user",
+        name: "management-user",
         meta: {
-          title: "用户管理",
+          title: "奖学金计算规则管理",
           permiss: "11",
         },
         component: () =>
           import(
-            /* webpackChunkName: "system-user" */ "../views/system/user.vue"
+            /* webpackChunkName: "system-user" */ "../views/admin/management/user.vue"
           ),
       },
       {
-        path: "/system-role",
-        name: "system-role",
+        path: "/management-allUsers",
+        name: "management-allUsers",
         meta: {
-          title: "角色管理",
+          title: "用户管理",
           permiss: "12",
         },
         component: () =>
           import(
-            /* webpackChunkName: "system-role" */ "../views/system/role.vue"
+            /* webpackChunkName: "system-role" */ "../views/admin/management/allUsers.vue"
+          ),
+      },
+      {
+        path: "/management-student",
+        name: "management-student",
+        meta: {
+          title: "学生管理",
+          permiss: "13",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "system-role" */ "../views/admin/management/student.vue"
+          ),
+      },
+      {
+        path: "/management-teacher",
+        name: "management-teacher",
+        meta: {
+          title: "老师管理",
+          permiss: "14",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "system-role" */ "../views/admin/management/teacher.vue"
           ),
       },
       {
@@ -96,15 +120,39 @@ const routes: RouteRecordRaw[] = [
       },
 
       {
-        path: "/announcement",
-        name: "announcement",
+        path: "/announcement/activate",
+        name: "activate",
         meta: {
-          title: "图标",
-          permiss: "5",
+          title: "活动公告",
+          permiss: "51",
         },
         component: () =>
           import(
-            /* webpackChunkName: "icon" */ "../views/pages/announcement.vue"
+            /* webpackChunkName: "icon" */ "../views/admin/announcement/activate.vue"
+          ),
+      },
+      {
+        path: "/announcement/scholarship",
+        name: "scholarship",
+        meta: {
+          title: "奖学金公告",
+          permiss: "52",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "icon" */ "../views/admin/announcement/scholarship.vue"
+          ),
+      },
+      {
+        path: "/announcement/school",
+        name: "school",
+        meta: {
+          title: "学校公告",
+          permiss: "53",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "icon" */ "../views/admin/announcement/school.vue"
           ),
       },
       {
@@ -115,7 +163,7 @@ const routes: RouteRecordRaw[] = [
         },
         component: () =>
           import(
-            /* webpackChunkName: "ucenter" */ "../views/pages/ucenter.vue"
+            /* webpackChunkName: "ucenter" */ "../views/common/ucenter.vue"
           ),
       },
       {
@@ -123,7 +171,7 @@ const routes: RouteRecordRaw[] = [
         name: "editor",
         meta: {
           title: "富文本编辑器",
-          permiss: "291",
+          permiss: "29",
         },
         component: () =>
           import(/* webpackChunkName: "editor" */ "../views/pages/editor.vue"),
@@ -141,24 +189,40 @@ const routes: RouteRecordRaw[] = [
           ),
       },
       {
-        path: "/export",
-        name: "export",
+        path: "/exportComprehensive",
+        name: "exportComprehensive",
         meta: {
-          title: "导出Excel",
+          title: "导出综测Excel",
           permiss: "34",
         },
         component: () =>
-          import(/* webpackChunkName: "export" */ "../views/table/export.vue"),
+          import(
+            /* webpackChunkName: "export" */ "../views/teacher/score/exportComprehensive.vue"
+          ),
       },
       {
-        path: "/import",
-        name: "import",
+        path: "/importScore",
+        name: "importScore",
         meta: {
-          title: "导入Excel",
+          title: "导入成绩Excel",
           permiss: "33",
         },
         component: () =>
-          import(/* webpackChunkName: "import" */ "../views/pages/import.vue"),
+          import(
+            /* webpackChunkName: "import" */ "../views/teacher/score/importScore.vue"
+          ),
+      },
+      {
+        path: "/importSession",
+        name: "importSession",
+        meta: {
+          title: "导入课程Excel",
+          permiss: "35",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "import" */ "../views/teacher/score/importSession.vue"
+          ),
       },
       {
         path: "/theme",
@@ -168,20 +232,57 @@ const routes: RouteRecordRaw[] = [
           permiss: "7",
         },
         component: () =>
-          import(/* webpackChunkName: "theme" */ "../views/pages/theme.vue"),
+          import(/* webpackChunkName: "theme" */ "../views/common/theme.vue"),
       },
       {
-        path: "/calendar",
-        name: "calendar",
+        path: "/showComprehensive",
+        name: "showComprehensive",
         meta: {
-          title: "日历",
-          permiss: "24",
+          title: "查看综测",
+          permiss: "8",
         },
         component: () =>
           import(
-            /* webpackChunkName: "calendar" */ "../views/pages/session.vue"
+            /* webpackChunkName: "theme" */ "../views/student/showComprehensive.vue"
           ),
       },
+      {
+        path: "/showAnnouncement/school",
+        name: "showSchoolAnnouncement",
+        meta: {
+          title: "查看学校公告",
+          permiss: "91",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "theme" */ "../views/student/showAnnouncement/school.vue"
+          ),
+      },
+      {
+        path: "/showAnnouncement/scholarship",
+        name: "showScholarshipAnnouncement",
+        meta: {
+          title: "查看奖学金公告",
+          permiss: "92",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "theme" */ "../views/student/showAnnouncement/scholarship.vue"
+          ),
+      },
+      {
+        path: "/showAnnouncement/activate",
+        name: "showActivateAnnouncement",
+        meta: {
+          title: "查看活动公告",
+          permiss: "93",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "theme" */ "../views/student/showAnnouncement/activate.vue"
+          ),
+      },
+
       {
         path: "/watermark",
         name: "watermark",
@@ -269,7 +370,7 @@ const routes: RouteRecordRaw[] = [
       noAuth: true,
     },
     component: () =>
-      import(/* webpackChunkName: "login" */ "../views/pages/login.vue"),
+      import(/* webpackChunkName: "login" */ "../views/common/login.vue"),
   },
   {
     path: "/register",
@@ -278,7 +379,7 @@ const routes: RouteRecordRaw[] = [
       noAuth: true,
     },
     component: () =>
-      import(/* webpackChunkName: "register" */ "../views/pages/register.vue"),
+      import(/* webpackChunkName: "register" */ "../views/common/register.vue"),
   },
   {
     path: "/reset-pwd",

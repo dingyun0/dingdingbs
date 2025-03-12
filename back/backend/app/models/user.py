@@ -33,7 +33,7 @@ class User(Model):
             f"last_login_time='{self.last_login_time}'"
             f")"
         )
-
     class Meta:
         table = 'user'
         table_description = "用户表"
+

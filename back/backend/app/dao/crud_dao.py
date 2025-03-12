@@ -8,6 +8,7 @@ from backend.app.dao.base import DaoBase
 from backend.app.models.user import User
 from backend.app.schemas.user import CreateUser, UpdateUser
 from backend.app.common.exception.errors import CustomError
+from backend.app.models.student import Student
 
 
 class UserDao(DaoBase[User, CreateUser, UpdateUser]):
@@ -111,17 +112,33 @@ class UserDao(DaoBase[User, CreateUser, UpdateUser]):
         return await User.filter(sno=sno).first()
 
     @staticmethod
-    async def create_user(username: str, password: str, sno: str = None):
-        """创建用户"""
+    @atomic()
+    async def create_user_with_student(user_data: dict) -> User:
+        """创建用户并关联学生信息"""
         try:
-            # 对密码进行加密
-            hashed_password = await jwt.get_hash_password(password)
-            return await User.create(
-                username=username,
-                password=hashed_password,  # 使用加密后的密码
-                sno=sno
+            # 创建用户
+            hashed_password = await jwt.get_hash_password(user_data["password"])
+            user = await User.create(
+                username=user_data["username"],
+                password=hashed_password,
+                sno=user_data["sno"],
+                roles="student"
             )
+            
+            # 创建学生信息
+            await Student.create(
+                sno=user_data["sno"],
+                name=user_data["username"],
+                department=user_data["department"],
+                major=user_data["major"],
+                grade=user_data["grade"],
+                class_name=user_data["class_name"],
+                user_id=user.id  # 直接存储用户ID
+            )
+            
+            return user
         except Exception as e:
+            print("创建用户失败:", str(e))
             raise CustomError(f"创建用户失败: {str(e)}")
 
 UserDao: UserDao = UserDao(User)

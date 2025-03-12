@@ -27,10 +27,15 @@ class Auth2(Auth):
 
 
 class CreateUser(SchemaBase):
+    """注册请求体"""
     username: str
     password: str
     confirmPassword: str
-    sno:str
+    sno: str
+    department: str
+    major: str
+    grade: str
+    class_name: str
 
 class UserInfo(SchemaBase):
     username: str
@@ -76,3 +81,11 @@ class UpdateUserRole(SchemaBase):
     """更新用户角色请求体"""
     id: str
     roles: str
+
+
+class UpdateTeacherRole(SchemaBase):
+    id: int
+    roles: str
+    department: str
+    major: str
+    title: str

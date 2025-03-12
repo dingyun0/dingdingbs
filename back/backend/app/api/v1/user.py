@@ -8,34 +8,27 @@ from backend.app.models.user import User
 from backend.app.common.jwt import CurrentUser, DependsJwtUser, get_current_user
 from backend.app.common.pagination import DependsPagination, paging_data
 from backend.app.common.response.response_schema import response_base
-from backend.app.schemas.user import CreateUser,UserInfo,Auth,GetUserInfo, ResetPassword, UpdateUser, UpdateUserRole
+from backend.app.schemas.user import CreateUser,UserInfo,Auth,GetUserInfo, ResetPassword, UpdateUser, UpdateUserRole, UpdateTeacherRole
 from backend.app.services.user_service import UserService
 from backend.app.common.exception.errors import CustomError
 
 router = APIRouter()
 
 
-@router.post('/register', summary='注册')
-async def create_user(obj: CreateUser):
-    try:
-        await UserService.register(obj)
-        return {
-            "code": 200,
-            "msg": "用户注册成功",
-            "data": None
-        }
-    except CustomError as e:
-        return {
-            "code": 400,  # 使用更合适的错误码
-            "msg": str(e),
-            "data": None
-        }
-    except Exception as e:
-        return {
-            "code": 500,
-            "msg": f"服务器错误: {str(e)}",
-            "data": None
-        }
+@router.post("/register", summary="用户注册")
+async def register(user_data: CreateUser):
+    """
+    用户注册接口
+    - username: 用户名
+    - password: 密码
+    - confirmPassword: 确认密码
+    - sno: 学号
+    - department: 学院
+    - major: 专业
+    - grade: 年级
+    - class_name: 班级
+    """
+    return await UserService.register(user_data)
 
 @router.get('/getInfo', summary='获取用户信息')
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
@@ -61,6 +54,27 @@ async def get_all_user_info(page: int = 1, page_size: int = 10):
     data = await UserService.get_all_user_info(page, page_size)
     return await response_base.success(data=data)
 
+@router.get('/getAllStudentInfo',summary="获取所有学生信息")
+async def get_all_student_info(page: int = 1, page_size: int = 10):
+    """
+    获取所有学生信息（分页）
+    :param page: 页码，默认1
+    :param page_size: 每页数量，默认10
+    """
+    print(f"接收到的分页参数 - page: {page}, page_size: {page_size}")
+    data=await UserService.get_all_student_info(page,page_size)
+    return await response_base.success(data=data)
+
+@router.get('/getAllTeacherInfo',summary="获取所有老师信息")
+async def get_all_teacher_info(page: int = 1, page_size: int = 10):
+    """
+    获取所有老师信息（分页）
+    :param page: 页码，默认1
+    :param page_size: 每页数量，默认10
+    """
+    print(f"接收到的分页参数 - page: {page}, page_size: {page_size}")
+    data=await UserService.get_all_teacher_info(page,page_size)
+    return await response_base.success(data=data)
 
 @router.get('/getRoutes', summary='获取用户路由权限')
 async def get_user_routes(current_user: User = Depends(get_current_user)):
@@ -69,14 +83,10 @@ async def get_user_routes(current_user: User = Depends(get_current_user)):
         # 根据用户角色返回对应的路由权限
         routes = {
             'admin': [
-                "0", "1", "11", "12", "2", "21", "22", "23", "24", 
-                "25", "26", "27", "28", "29", "291", "292", "3", "31", 
-                "32", "33", "34", "4", "41", "42", "5", "7", "6", "61", 
-                "62", "63", "64", "65", "66"
+                "0", "1", "11", "12", "13","14", "5", "51","52","53","7"
             ],
-            'teacher': ["0"],
-            'student': ["0", "1", "11", "12", "2", "21", "22", "23", "24", 
-                "25"]        }
+            'teacher': ["0","3","31","32","33","34","35","7"],
+            'student': ["0", "8","7","9","91","92","93"]        }
         
         # 获取用户角色
         user_role = current_user.roles  # 假设用户模型中有role字段
@@ -96,6 +106,23 @@ async def update_user_role(user_data: UpdateUserRole):
     print("1111",user_data)
     count = await UserService.update_user_role(user_data.id, user_data.roles)
     return await response_base.success(data=count, msg="更新角色成功")
+
+@router.put("/updateTeacherRole")
+async def update_teacher_role(teacher_data: UpdateTeacherRole):
+    """更新教师角色和信息"""
+    try:
+        result = await UserService.update_user_with_role_change(
+            user_id=teacher_data.id,
+            roles=teacher_data.roles,
+            teacher_data={
+                "department": teacher_data.department,
+                "major": teacher_data.major,
+                "title": teacher_data.title
+            }
+        )
+        return await response_base.success(data=result, msg="更新成功")
+    except Exception as e:
+        return await response_base.fail(msg=f"更新失败: {str(e)}")
 
 @router.post('/password/reset/code', summary='获取密码重置验证码', description='可以通过用户名或者邮箱重置密码')
 async def password_reset_captcha(username_or_email: str, response: Response):

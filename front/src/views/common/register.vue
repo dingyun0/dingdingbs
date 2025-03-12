@@ -24,6 +24,67 @@
             </template>
           </el-input>
         </el-form-item>
+        <el-form-item prop="department">
+          <el-select
+            v-model="param.department"
+            placeholder="请选择学院"
+            style="width: 100%"
+          >
+            <template #prefix>
+              <el-icon><School /></el-icon>
+            </template>
+            <el-option
+              v-for="dept in departments"
+              :key="dept.value"
+              :label="dept.label"
+              :value="dept.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="major">
+          <el-select
+            v-model="param.major"
+            placeholder="请选择专业"
+            style="width: 100%"
+            :disabled="!param.department"
+          >
+            <template #prefix>
+              <el-icon><Notebook /></el-icon>
+            </template>
+            <el-option
+              v-for="major in availableMajors"
+              :key="major"
+              :label="major"
+              :value="major"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="grade">
+          <el-select
+            v-model="param.grade"
+            placeholder="请选择年级"
+            style="width: 100%"
+          >
+            <template #prefix>
+              <el-icon><Calendar /></el-icon>
+            </template>
+            <el-option
+              v-for="grade in grades"
+              :key="grade"
+              :label="grade"
+              :value="grade"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="class_name">
+          <el-input v-model="param.class_name" placeholder="班级">
+            <template #prepend>
+              <el-icon>
+                <Collection />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
         <el-form-item prop="password">
           <el-input
             type="password"
@@ -70,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref, reactive, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, type FormInstance, type FormRules } from "element-plus";
 import { Register } from "@/types/user";
@@ -82,7 +143,53 @@ const param = reactive<Register>({
   password: "",
   confirmPassword: "",
   sno: "",
+  department: "",
+  major: "",
+  grade: "",
+  class_name: "",
 });
+
+// 定义学院和专业的映射关系
+const departments = [
+  {
+    label: "信息科学与技术学院",
+    value: "信息科学与技术学院",
+    majors: ["网络工程", "计算机", "电子", "物联网", "通信"],
+  },
+  {
+    label: "人文与社会科学学院",
+    value: "人文与社会科学学院",
+    majors: ["社工", "文管", "行管"],
+  },
+  {
+    label: "何香凝艺术设计学院",
+    value: "何香凝艺术设计学院",
+    majors: ["数媒", "视觉", "环境"],
+  },
+  {
+    label: "机电工程学院",
+    value: "机电工程学院",
+    majors: ["机电"],
+  },
+];
+
+const grades = ["21级", "22级", "23级", "24级"];
+
+// 根据选择的学院计算可选的专业
+const availableMajors = computed(() => {
+  const selectedDept = departments.find(
+    (dept) => dept.value === param.department
+  );
+  return selectedDept ? selectedDept.majors : [];
+});
+
+// 监听学院变化，重置专业选择
+watch(
+  () => param.department,
+  () => {
+    param.major = "";
+  }
+);
 
 const rules: FormRules = {
   username: [
@@ -95,6 +202,10 @@ const rules: FormRules = {
   password: [{ required: true, message: "请输入密码", trigger: "blur" }],
   email: [{ required: true, message: "请输入邮箱", trigger: "blur" }],
   sno: [{ required: true, message: "请输入学号", trigger: "blur" }],
+  department: [{ required: true, message: "请选择学院", trigger: "change" }],
+  major: [{ required: true, message: "请选择专业", trigger: "change" }],
+  grade: [{ required: true, message: "请选择年级", trigger: "change" }],
+  class_name: [{ required: true, message: "请输入班级", trigger: "blur" }],
 };
 const register = ref<FormInstance>();
 const registerFunc = () => {
@@ -183,5 +294,14 @@ function elMessage(arg0: string, arg1: string) {
   margin-top: 20px;
   font-size: 14px;
   color: #787878;
+}
+
+/* 添加下拉框的图标样式 */
+:deep(.el-select .el-input .el-input__prefix) {
+  left: 10px;
+}
+
+:deep(.el-select .el-input input) {
+  padding-left: 35px;
 }
 </style>
