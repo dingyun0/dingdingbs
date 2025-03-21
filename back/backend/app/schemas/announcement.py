@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from backend.app.schemas.base import SchemaBase
+from enum import Enum
 
 
 class AnnouncementBase(SchemaBase):
@@ -30,3 +31,8 @@ class AnnouncementInfo(AnnouncementBase):
 
     class Config:
         from_attributes = True
+
+
+class AnnouncementType(str, Enum):
+    SCHOOL = "school"
+    SCHOLARSHIP = "scholarship"

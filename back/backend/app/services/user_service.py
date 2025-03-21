@@ -19,6 +19,7 @@ from backend.app.core.path_conf import AvatarPath
 from backend.app.dao.crud_dao import UserDao  # 导入单例实例
 from backend.app.models.user import User
 from backend.app.models.student import Student
+
 from backend.app.models.teacher import Teacher
 from backend.app.schemas.user import (Auth, Auth2, CreateUser, ResetPassword,
                                       UpdateUser)
@@ -145,6 +146,8 @@ class UserService:
             return {"code": 500, "msg": str(e)}
         except Exception as e:
             return {"code": 500, "msg": f"注册失败: {str(e)}"}
+
+
 
     @staticmethod
     async def get_pwd_rest_captcha(*, username_or_email: str, response: Response):

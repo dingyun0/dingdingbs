@@ -3,6 +3,7 @@ from tortoise import fields, Model
 class Teacher(Model):
     """教师表"""
     id = fields.BigIntField(pk=True, index=True, description='主键id')
+    name=fields.CharField(max_length=50,description="姓名")
     department = fields.CharField(max_length=50, description="学院")
     major = fields.CharField(max_length=50, description="专业") 
     title = fields.CharField(max_length=20, description="职称")  # 新增职称字段

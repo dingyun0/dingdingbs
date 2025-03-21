@@ -179,12 +179,12 @@ export const menuData: Menus[] = [
     index: "5",
     title: "公告",
     children: [
-      {
-        id: "51",
-        pid: "5",
-        index: "/announcement/activate",
-        title: "活动公告",
-      },
+      // {
+      //   id: "51",
+      //   pid: "5",
+      //   index: "/announcement/activate",
+      //   title: "活动公告",
+      // },
       {
         id: "52",
         pid: "5",
@@ -217,13 +217,25 @@ export const menuData: Menus[] = [
         index: "/showAnnouncement/scholarship",
         title: "奖学金公告",
       },
-      {
-        id: "93",
-        pid: "9",
-        index: "/showAnnouncement/activate",
-        title: "活动公告",
-      },
+      // {
+      //   id: "93",
+      //   pid: "9",
+      //   index: "/showAnnouncement/activate",
+      //   title: "活动公告",
+      // },
     ],
+  },
+  {
+    id: "10",
+    icon: "Calendar",
+    index: "/activity/activity",
+    title: "活动",
+  },
+  {
+    id: "111",
+    icon: "Calendar",
+    index: "/activity/showActivity",
+    title: "查看活动",
   },
   {
     id: "8",

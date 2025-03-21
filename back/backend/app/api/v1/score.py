@@ -19,3 +19,4 @@ async def get_all_scores():
     获取所有成绩
     """
     return await ScoreService.get_all_scores()
+

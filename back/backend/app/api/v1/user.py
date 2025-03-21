@@ -11,6 +11,7 @@ from backend.app.common.response.response_schema import response_base
 from backend.app.schemas.user import CreateUser,UserInfo,Auth,GetUserInfo, ResetPassword, UpdateUser, UpdateUserRole, UpdateTeacherRole
 from backend.app.services.user_service import UserService
 from backend.app.common.exception.errors import CustomError
+from backend.app.models.teacher import Teacher
 
 router = APIRouter()
 
@@ -83,10 +84,10 @@ async def get_user_routes(current_user: User = Depends(get_current_user)):
         # 根据用户角色返回对应的路由权限
         routes = {
             'admin': [
-                "0", "1", "11", "12", "13","14", "5", "51","52","53","7"
+                "0", "1", "11", "12", "13","14", "5","52","53","7","10","101"
             ],
             'teacher': ["0","3","31","32","33","34","35","7"],
-            'student': ["0", "8","7","9","91","92","93"]        }
+            'student': ["0", "8","7","9","91","92",'111']        }
         
         # 获取用户角色
         user_role = current_user.roles  # 假设用户模型中有role字段
@@ -99,6 +100,18 @@ async def get_user_routes(current_user: User = Depends(get_current_user)):
     except Exception as e:
         print("获取路由权限错误:", str(e))
         return await response_base.fail(msg=str(e))
+
+
+@router.get('/get_all_teachers_name', summary="获取所有教师姓名列表")
+async def get_all_teachers_name(current_user: User = Depends(get_current_user)):
+    """获取所有教师姓名列表"""
+    try:
+       
+        teachers = await Teacher.all().values('id', 'name')
+        return await response_base.success(data=teachers)
+    except Exception as e:
+        print(f"获取教师姓名列表失败: {str(e)}")
+        return await response_base.fail(msg=f"获取教师姓名列表失败: {str(e)}")
 
 @router.put("/update")
 async def update_user_role(user_data: UpdateUserRole):
@@ -204,6 +217,11 @@ async def delete_user(user_id: int):
         return await response_base.success(msg="删除成功")
     except Exception as e:
         return await response_base.fail(msg=f"删除失败: {str(e)}")
+
+
+
+
+
 
 
 

@@ -2,7 +2,11 @@
   <div>
     <div class="container">
       <div class="handle-box">
+        <el-button class="mr10" type="primary" @click="showImportDialog">
+          填写成绩基本信息
+        </el-button>
         <el-upload
+          ref="uploadRef"
           action="#"
           :limit="1"
           accept=".xlsx, .xls"
@@ -10,9 +14,18 @@
           :before-upload="beforeUpload"
           :http-request="handleMany"
         >
-          <el-button class="mr10" type="success">批量导入</el-button>
+          <el-button class="mr10" type="success" :disabled="!hasSetBasicInfo"
+            >批量导入</el-button
+          >
         </el-upload>
-        <el-link href="/template.xlsx" target="_blank">下载模板</el-link>
+        <el-button
+          link
+          type="primary"
+          @click="generateTemplate"
+          :disabled="!hasSetBasicInfo"
+        >
+          下载模板
+        </el-button>
         <el-button
           type="primary"
           @click="handleSave"
@@ -29,72 +42,165 @@
         header-cell-class-name="table-header"
       >
         <el-table-column
-          prop="id"
-          label="ID"
-          width="55"
-          align="center"
-        ></el-table-column>
-        <el-table-column prop="sno" label="学号"></el-table-column>
-        <el-table-column prop="name" label="姓名"></el-table-column>
-        <el-table-column prop="class_name" label="班级"></el-table-column>
-
-        <el-table-column
-          prop="操作系统课程设计成绩"
-          label="操作系统课程设计成绩"
-        ></el-table-column>
-        <el-table-column
-          prop="无线网络技术成绩"
-          label="无线网络技术成绩"
-        ></el-table-column>
-        <el-table-column
-          prop="计算机网络课程设计"
-          label="计算机网络课程设计"
-        ></el-table-column>
-        <el-table-column prop="操作系统" label="操作系统"></el-table-column>
-        <el-table-column
-          prop="人工智能与网络技术学科前沿"
-          label="人工智能与网络技术学科前沿"
-        ></el-table-column>
-        <el-table-column
-          prop="信息安全原理及应用"
-          label="信息安全原理及应用"
-        ></el-table-column>
-        <el-table-column
-          prop="Linux操作系统"
-          label="Linux操作系统"
-        ></el-table-column>
-        <el-table-column
-          prop="Java程序设计"
-          label="Java程序设计"
-        ></el-table-column>
+          v-for="col in columns"
+          :key="col.prop"
+          :prop="col.prop"
+          :label="col.label"
+          :width="col.width"
+          :align="col.align"
+        >
+        </el-table-column>
       </el-table>
     </div>
+
+    <el-dialog
+      title="填写成绩基本信息"
+      v-model="dialogVisible"
+      width="30%"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="filterForm" label-width="100px">
+        <el-form-item label="学院">
+          <el-select
+            v-model="filterForm.department"
+            placeholder="请选择学院"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in options.colleges"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="专业">
+          <el-select
+            v-model="filterForm.major"
+            placeholder="请选择专业"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in options.majors"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="年级">
+          <el-select
+            v-model="filterForm.grade"
+            placeholder="请选择年级"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in options.grades"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleConfirmBasicInfo"
+            >确定</el-button
+          >
+        </span>
+      </template>
+    </el-dialog>
+
+    <el-upload
+      ref="uploadRef"
+      action="#"
+      :limit="1"
+      accept=".xlsx, .xls"
+      :show-file-list="false"
+      :before-upload="beforeUpload"
+      :http-request="handleMany"
+      style="display: none"
+    >
+    </el-upload>
   </div>
 </template>
 
 <script setup lang="ts" name="import">
-import { UploadProps } from "element-plus";
-import { ref, reactive, onMounted } from "vue";
+import { UploadProps, UploadInstance } from "element-plus";
+import { ref, reactive, onMounted, computed } from "vue";
 import * as XLSX from "xlsx";
 import { saveScoreReq } from "@/api/score";
 import { ElMessage } from "element-plus";
+import { getSessionOptionsReq, getFilteredCoursesReq } from "@/api/session";
+import {
+  SessionOptionsResponse,
+  FilteredCoursesResponse,
+} from "@/types/session";
 
-interface TableItem {
-  id: number;
-  name: string;
-  sno: string;
-  class_name: string;
-  操作系统课程设计成绩: string;
-  无线网络技术成绩: string;
-  计算机网络课程设计: string;
-  操作系统: string;
-  人工智能与网络技术学科前沿: string;
-  信息安全原理及应用: string;
-  Linux操作系统: string;
-  Java程序设计: string;
-}
+// interface TableItem {
+//   id: number;
+//   name: string;
+//   sno: string;
+//   class_name: string;
+//   操作系统课程设计成绩: string;
+//   无线网络技术成绩: string;
+//   计算机网络课程设计: string;
+//   操作系统: string;
+//   人工智能与网络技术学科前沿: string;
+//   信息安全原理及应用: string;
+//   Linux操作系统: string;
+//   Java程序设计: string;
+// }
 
-const tableData = ref<TableItem[]>([]);
+const tableData = ref([]);
+const dialogVisible = ref(false);
+const uploadRef = ref<UploadInstance>();
+
+// 筛选表单数据
+const filterForm = ref({
+  department: "",
+  major: "",
+  grade: "",
+});
+
+const options = ref<{
+  colleges: string[];
+  majors: string[];
+  grades: string[];
+}>({
+  colleges: [],
+  majors: [],
+  grades: [],
+});
+
+// 动态列配置
+const columns = ref([
+  { prop: "id", label: "ID", width: "55", align: "center" },
+  { prop: "sno", label: "学号" },
+  { prop: "name", label: "姓名" },
+  { prop: "class_name", label: "班级" },
+]);
+
+// 获取选项数据
+const getOptions = async () => {
+  try {
+    const res = await getSessionOptionsReq();
+    console.log("API返回数据:", res);
+
+    if (res.code === 200) {
+      options.value = res.data;
+      console.log("选项数据:", options.value);
+    } else {
+      ElMessage.error(res.message || "获取选项失败");
+    }
+  } catch (error) {
+    console.error("获取选项失败:", error);
+    ElMessage.error("获取选项失败");
+  }
+};
+
 // 获取表格数据
 const getData = () => {
   tableData.value = [];
@@ -125,22 +231,21 @@ const analysisExcel = (file: any) => {
 //
 const handleMany = async () => {
   const list = importList.value.map((item: any, index: number) => {
-    return {
+    const baseInfo = {
       id: index + 1,
       name: item["姓名"],
       sno: String(item["学号"]),
       class_name: item["班级"],
-      操作系统课程设计成绩: String(item["操作系统课程设计成绩"]),
-      无线网络技术成绩: String(item["无线网络技术成绩"]),
-      计算机网络课程设计: String(item["计算机网络课程设计"]),
-      操作系统: String(item["操作系统"]),
-      人工智能与网络技术学科前沿: String(
-        item["人工智能与网络技术学科前沿（创新创业教育）"]
-      ),
-      信息安全原理及应用: String(item["信息安全原理及应用"]),
-      Linux操作系统: String(item["Linux 操作系统"]),
-      Java程序设计: String(item["Java 程序设计"]),
     };
+
+    // 动态添加课程成绩
+    columns.value.forEach((col) => {
+      if (!["id", "sno", "name", "class_name"].includes(col.prop)) {
+        baseInfo[col.prop] = String(item[col.label] || "");
+      }
+    });
+
+    return baseInfo;
   });
   tableData.value.push(...list);
   checkButtonState();
@@ -149,22 +254,74 @@ const handleMany = async () => {
 // 添加这个函数来检查按钮状态
 const checkButtonState = () => {
   console.log("tableData长度:", tableData.value.length);
-  console.log("按钮是否禁用:", !tableData.length);
+  console.log("按钮是否禁用:", !tableData.value.length);
 };
 
 // 在数据加载后调用
 onMounted(() => {
+  getOptions();
   checkButtonState();
 });
 
-const handleSave = async () => {
-  console.log("handleSave被调用");
+// 添加一个状态来控制是否已设置基本信息
+const hasSetBasicInfo = ref(false);
+
+// 修改显示对话框的处理函数
+const showImportDialog = async () => {
+  await getOptions();
+  dialogVisible.value = true;
+};
+
+// 新增确认基本信息的处理函数
+const handleConfirmBasicInfo = async () => {
   try {
-    console.log("11111111111111111111111");
+    // 验证表单是否填写完整
+    if (
+      !filterForm.value.department ||
+      !filterForm.value.major ||
+      !filterForm.value.grade
+    ) {
+      ElMessage.warning("请填写完整的筛选条件");
+      return;
+    }
 
-    console.log("发送的数据:", tableData.value);
+    const res = await getFilteredCoursesReq({
+      department: filterForm.value.department,
+      major: filterForm.value.major,
+      grade: filterForm.value.grade,
+    });
 
+    if (res.data.code === 200) {
+      columns.value = [
+        { prop: "id", label: "ID", width: "55", align: "center" },
+        { prop: "sno", label: "学号" },
+        { prop: "name", label: "姓名" },
+        { prop: "class_name", label: "班级" },
+        ...res.data.data.map((course) => ({
+          prop: course.course_id,
+          label: course.course_name,
+        })),
+      ];
+
+      hasSetBasicInfo.value = true;
+      dialogVisible.value = false;
+      ElMessage.success("基本信息设置成功");
+    } else {
+      ElMessage.error(res.data.message || "获取课程列表失败");
+    }
+  } catch (error) {
+    console.error("获取课程列表失败:", error);
+    ElMessage.error("获取课程列表失败");
+  }
+};
+
+// 修改保存逻辑，加入筛选条件
+const handleSave = async () => {
+  try {
     const data = {
+      department: filterForm.value.department,
+      major: filterForm.value.major,
+      grade: filterForm.value.grade,
       scores: tableData.value.map((item) => ({
         name: item.name,
         sno: item.sno,
@@ -179,12 +336,63 @@ const handleSave = async () => {
         Java程序设计: item.Java程序设计,
       })),
     };
-    console.log("发送的数据结构:", JSON.stringify(data, null, 2));
     await saveScoreReq(data);
     ElMessage.success("保存成功");
+    tableData.value = [];
+    filterForm.value = {
+      department: "",
+      major: "",
+      grade: "",
+    };
   } catch (error) {
     console.error("保存失败:", error);
     ElMessage.error(error.response?.data?.msg || "保存失败");
+  }
+};
+
+// 添加生成模板的函数
+const generateTemplate = () => {
+  try {
+    if (!hasSetBasicInfo.value) {
+      ElMessage.warning("请先填写成绩基本信息");
+      return;
+    }
+
+    const headers = [
+      "学号",
+      "姓名",
+      "班级",
+      ...columns.value
+        .filter(
+          (col) => !["id", "sno", "name", "class_name"].includes(col.prop)
+        )
+        .map((col) => col.label),
+    ];
+
+    const exampleRow = headers.reduce((acc, header) => {
+      acc[header] = "";
+      return acc;
+    }, {});
+
+    const ws = XLSX.utils.json_to_sheet([exampleRow], {
+      header: headers,
+    });
+
+    // 设置列宽
+    const colWidth = headers.map(() => ({ wch: 15 }));
+    ws["!cols"] = colWidth;
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "成绩模板");
+
+    // 下载文件
+    XLSX.writeFile(
+      wb,
+      `成绩导入模板_${filterForm.value.department}_${filterForm.value.major}_${filterForm.value.grade}.xlsx`
+    );
+  } catch (error) {
+    console.error("生成模板失败:", error);
+    ElMessage.error("生成模板失败");
   }
 };
 </script>
@@ -198,5 +406,11 @@ const handleSave = async () => {
 .table {
   width: 100%;
   font-size: 14px;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 </style>

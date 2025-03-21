@@ -40,7 +40,9 @@
         <el-table-column prop="credit" label="学分"></el-table-column>
         <el-table-column prop="hours" label="学时"></el-table-column>
         <el-table-column prop="nature" label="课程性质"></el-table-column>
-        <el-table-column prop="department" label="开课院系"></el-table-column>
+        <el-table-column prop="college" label="所属学院"></el-table-column>
+        <el-table-column prop="major" label="所属专业"></el-table-column>
+        <el-table-column prop="grade" label="适用年级"></el-table-column>
       </el-table>
     </div>
   </div>
@@ -60,7 +62,9 @@ interface TableItem {
   credit: string;
   hours: string;
   nature: string;
-  department: string;
+  college: string;
+  major: string;
+  grade: string;
 }
 
 const tableData = ref<TableItem[]>([]);
@@ -101,7 +105,9 @@ const handleMany = async () => {
       credit: String(item["学分"]),
       hours: String(item["学时"]),
       nature: item["课程性质"],
-      department: item["开课院系"],
+      college: item["所属学院"],
+      major: item["所属专业"],
+      grade: item["适用年级"],
     };
   });
   tableData.value.push(...list);
@@ -120,10 +126,7 @@ onMounted(() => {
 });
 
 const handleSave = async () => {
-  console.log("handleSave被调用");
   try {
-    console.log("发送的数据:", tableData.value);
-
     const data = {
       sessions: tableData.value.map((item) => ({
         course_id: item.course_id,
@@ -131,12 +134,15 @@ const handleSave = async () => {
         credit: item.credit,
         hours: item.hours,
         nature: item.nature,
-        department: item.department,
+        college: item.college,
+        major: item.major,
+        grade: item.grade,
       })),
     };
-    console.log("发送的数据结构:", JSON.stringify(data, null, 2));
+    console.log("发送的数据结构:", JSON.stringify(data, null, 2)); // 检查发送的数据
     await saveSessionReq(data);
     ElMessage.success("保存成功");
+    tableData.value = []; // 清空表格数据
   } catch (error) {
     console.error("保存失败:", error);
     ElMessage.error(error.response?.data?.msg || "保存失败");

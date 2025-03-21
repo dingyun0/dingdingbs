@@ -66,6 +66,13 @@ export const addUserReq = (data: any) => {
   });
 };
 
+export const getTeacherNameReq = () => {
+  return request({
+    url: "/users/get_all_teachers_name",
+    method: "get",
+  });
+};
+
 export const updateUserReq = (data: any) => {
   return request({
     url: "/user/update",

@@ -17,3 +17,4 @@ class ScoreBase(SchemaBase):
 
 class SaveScore(SchemaBase):
     scores: List[ScoreBase]
+    

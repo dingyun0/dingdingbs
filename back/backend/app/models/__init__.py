@@ -9,6 +9,8 @@ from backend.app.models import session
 from backend.app.models import comprehensive_test
 from backend.app.models import student
 from backend.app.models import teacher
+from backend.app.models import activity
+from backend.app.models import activity_review
 
 # 新增model后，在list引入模块文件
 models = [
@@ -18,7 +20,9 @@ models = [
     session,
     comprehensive_test,
     student,
-    teacher
+    teacher,
+    activity,
+    activity_review
 ]
 
-__all__ = ['User', 'Score', 'Announcement', 'Session', 'ComprehensiveTest', 'Student','Teacher']
+__all__ = ['User', 'Score', 'Announcement', 'Session', 'ComprehensiveTest', 'Student','Teacher','activity','activity_review']

@@ -119,18 +119,18 @@ const routes: RouteRecordRaw[] = [
           ),
       },
 
-      {
-        path: "/announcement/activate",
-        name: "activate",
-        meta: {
-          title: "活动公告",
-          permiss: "51",
-        },
-        component: () =>
-          import(
-            /* webpackChunkName: "icon" */ "../views/admin/announcement/activate.vue"
-          ),
-      },
+      // {
+      //   path: "/announcement/activate",
+      //   name: "activate",
+      //   meta: {
+      //     title: "活动公告",
+      //     permiss: "51",
+      //   },
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "icon" */ "../views/admin/announcement/activate.vue"
+      //     ),
+      // },
       {
         path: "/announcement/scholarship",
         name: "scholarship",
@@ -270,16 +270,40 @@ const routes: RouteRecordRaw[] = [
             /* webpackChunkName: "theme" */ "../views/student/showAnnouncement/scholarship.vue"
           ),
       },
+      // {
+      //   path: "/showAnnouncement/activate",
+      //   name: "showActivateAnnouncement",
+      //   meta: {
+      //     title: "查看活动公告",
+      //     permiss: "93",
+      //   },
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "theme" */ "../views/student/showAnnouncement/activate.vue"
+      //     ),
+      // },
       {
-        path: "/showAnnouncement/activate",
-        name: "showActivateAnnouncement",
+        path: "/activity/activity",
+        name: "activity",
         meta: {
-          title: "查看活动公告",
-          permiss: "93",
+          title: "活动",
+          permiss: "101",
         },
         component: () =>
           import(
-            /* webpackChunkName: "theme" */ "../views/student/showAnnouncement/activate.vue"
+            /* webpackChunkName: "theme" */ "../views/admin/activity/activity.vue"
+          ),
+      },
+      {
+        path: "/activity/showActivity",
+        name: "showActivity",
+        meta: {
+          title: "查看活动",
+          permiss: "111",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "theme" */ "../views/student/activity/showActivity.vue"
           ),
       },
 

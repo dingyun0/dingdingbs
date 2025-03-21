@@ -110,7 +110,6 @@ const options = {
       options: [
         { label: "学校公告", value: "school" },
         { label: "奖学金公告", value: "scholarship" },
-        { label: "活动公告", value: "activate" },
       ],
       required: true,
     },
