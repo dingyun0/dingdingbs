@@ -21,7 +21,7 @@ class ComprehensiveTestService:
             }
         except Exception as e:
             logging.error(f"保存综合测评失败: {str(e)}", exc_info=True)
-            raise CustomError(msg=f"保存综合测评失败: {str(e)}", code=500)
+            raise CustomError(message=f"保存综合测评失败: {str(e)}")
     
     @staticmethod
     async def get_all_tests():
@@ -36,23 +36,24 @@ class ComprehensiveTestService:
                         "sno": test.sno,
                         "name": test.name,
                         "class_name": test.class_name,
-                        "操作系统课程设计成绩": test.操作系统课程设计成绩,
-                        "无线网络技术成绩": test.无线网络技术成绩,
+                        "操作系统课程设计": test.操作系统课程设计,
+                        "无线网络技术": test.无线网络技术,
                         "计算机网络课程设计": test.计算机网络课程设计,
                         "操作系统": test.操作系统,
                         "人工智能与网络技术学科前沿": test.人工智能与网络技术学科前沿,
                         "信息安全原理及应用": test.信息安全原理及应用,
                         "Linux操作系统": test.Linux操作系统,
                         "Java程序设计": test.Java程序设计,
+                        "数据结构":test.数据结构,
                         "credit_gpa": float(test.credit_gpa),
                         "year_gpa": float(test.year_gpa),
-                        "comprehensive_score": float(test.comprehensive_score)
+                        "comprehensive": float(test.comprehensive)
                     } for test in tests
                 ]
             }
         except Exception as e:
             logging.error(f"获取综合测评失败: {str(e)}", exc_info=True)
-            raise CustomError(msg=f"获取综合测评失败: {str(e)}", code=500)
+            raise CustomError(message=f"获取综合测评失败: {str(e)}")
 
     @staticmethod
     async def get_test_by_sno(sno: str):
@@ -73,19 +74,21 @@ class ComprehensiveTestService:
                     "sno": test.sno,
                     "name": test.name,
                     "class_name": test.class_name,
-                    "操作系统课程设计成绩": test.操作系统课程设计成绩,
-                    "无线网络技术成绩": test.无线网络技术成绩,
+                    "操作系统课程设计": test.操作系统课程设计,
+                    "无线网络技术": test.无线网络技术,
                     "计算机网络课程设计": test.计算机网络课程设计,
                     "操作系统": test.操作系统,
                     "人工智能与网络技术学科前沿": test.人工智能与网络技术学科前沿,
                     "信息安全原理及应用": test.信息安全原理及应用,
                     "Linux操作系统": test.Linux操作系统,
                     "Java程序设计": test.Java程序设计,
+                    "数据结构":test.数据结构,
+                    "人工智能基础":test.人工智能基础,
                     "credit_gpa": float(test.credit_gpa),
                     "year_gpa": float(test.year_gpa),
-                    "comprehensive_score": float(test.comprehensive_score)
+                    "comprehensivee": float(test.comprehensive)
                 }
             }
         except Exception as e:
             logging.error(f"获取学业分信息失败: {str(e)}", exc_info=True)
-            raise CustomError(msg=f"获取学业分信息失败: {str(e)}", code=500) 
+            raise CustomError(message=f"获取学业分信息失败: {str(e)}") 

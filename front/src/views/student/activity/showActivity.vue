@@ -237,12 +237,14 @@ const handleSubmit = async () => {
       teacher_id: selectedTeacher.value,
       student_sno: userStore.sno, // 使用学号而不是userId
     });
+    console.log("99999999", currentActivity.value.category);
 
     const res = await applyActivityReq({
       activity_id: currentActivity.value.id,
       activity_title: currentActivity.value.title,
       teacher_id: selectedTeacher.value,
       student_sno: userStore.sno,
+      activity_category: currentActivity.value.category,
     });
 
     ElMessage.success("申请成功");

@@ -104,3 +104,22 @@ async def get_review_message(student_sno: str):
     except Exception as e:
         print("获取审核消息失败:", str(e))
         return {"code": 500, "msg": f"获取失败: {str(e)}", "data": None}
+    
+
+@router.get('/activity-scores', summary="根据学号和活动类型获取活动学分")
+async def activity_scores(student_sno: str, activity_category: str = None):
+    """
+    获取学生的活动分数
+    
+    Args:
+        student_sno: 学生学号
+        activity_category: 活动类型（可选，不传则获取所有类型）
+        
+    Returns:
+        活动分数列表，包含活动ID、标题和学分
+    """
+    try:
+        return await ActivityService.activity_scores(student_sno, activity_category)
+    except Exception as e:
+        print("获取活动分数失败:", str(e))
+        return {"code": 500, "msg": f"获取失败: {str(e)}", "data": None}

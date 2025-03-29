@@ -423,13 +423,24 @@ const handleSave = async () => {
                   "creditGpa",
                   "yearGpa",
                   "comprehensiveScore",
+                  "academic",
+                  "labor",
+                  "sports",
+                  "innovation",
+                  "zongce"
                 ].includes(col.prop)
             )
             .map((col) => [col.prop, item[col.prop]])
         ),
         credit_gpa: item.creditGpa,
         year_gpa: item.yearGpa,
-        comprehensive_score: item.comprehensiveScore,
+        
+        academic: item.academic,
+        labor: item.labor,
+        sports: item.sports,
+        innovation: item.innovation,
+        zongce: item.zongce,
+        comprehensive: item.comprehensiveScore
       })),
     };
 
@@ -505,6 +516,7 @@ import {
   getSessionOptionsReq,
   getFilteredCoursesReq,
 } from "@/api/session";
+import { getActivityScoresReq } from "@/api/activity";
 import { getScoreAll } from "@/api/score";
 import { saveComprehensiveTestReq } from "@/api/comprehensive-test";
 
@@ -533,6 +545,11 @@ interface StudentScore {
   creditGpa: number;
   yearGpa: number;
   comprehensiveScore: number;
+  academic: number;
+  labor: number;
+  sports: number;
+  innovation: number;
+  zongce: number;
 }
 
 const tableData = ref([]);
@@ -592,6 +609,29 @@ const getCourseData = async () => {
   }
 };
 
+//获取活动分数
+const getActivityScores = async (
+  sno: string,
+  category: string
+): Promise<number> => {
+  try {
+    const response = await getActivityScoresReq({
+      student_sno: sno,
+      activity_category: category,
+    });
+
+    if (response.data.code === 200) {
+      // 计算该类型的总加分
+      return response.data.data.reduce((sum, activity) => {
+        return sum + (parseFloat(activity.credits) || 0);
+      }, 0);
+    }
+    return 0;
+  } catch (error) {
+    console.error(`获取${category}活动加分失败:`, error);
+    return 0;
+  }
+};
 // 显示筛选对话框
 const showFilterDialog = async () => {
   try {
@@ -642,6 +682,11 @@ const handleConfirmBasicInfo = async () => {
         { prop: "creditGpa", label: "学分绩点", width: "100" },
         { prop: "yearGpa", label: "学年绩点", width: "100" },
         { prop: "comprehensiveScore", label: "学业分成绩", width: "100" },
+        { prop: "academic", label: "学业分加分", width: "100" },
+        { prop: "labor", label: "劳动分加分", width: "100" },
+        { prop: "sports", label: "文体分加分", width: "100" },
+        { prop: "innovation", label: "思想分加分", width: "100" },
+        { prop: "zongce", label: "综测分数", width: "100" },
       ];
 
       hasSetBasicInfo.value = true;
@@ -657,6 +702,116 @@ const handleConfirmBasicInfo = async () => {
     ElMessage.error("获取课程列表失败");
   }
 };
+
+// 修改获取成绩数据的方法
+// const getScoreData = async () => {
+//   try {
+//     const response = await getScoreAll({
+//       department: filterForm.value.department,
+//       major: filterForm.value.major,
+//       grade: filterForm.value.grade,
+//     });
+
+//     if (!response.data.data) {
+//       ElMessage.warning("未找到成绩数据");
+//       tableData.value = [];
+//       return;
+//     }
+
+//     const scores = response.data.data;
+
+//     // 确保课程数据已加载
+//     if (courseData.value.length === 0) {
+//       await getCourseData();
+//     }
+
+//     // 创建课程名称到学分的映射
+//     const courseCredits = {};
+//     const courseNature = {};
+
+//     courseData.value.forEach((course) => {
+//       courseCredits[course.course_name] = parseFloat(course.credit) || 0;
+//       courseNature[course.course_name] = course.nature;
+//     });
+
+//     // 获取当前显示的课程列
+//     const courseCols = columns.value.filter(
+//       (col) =>
+//         ![
+//           "sno",
+//           "name",
+//           "class_name",
+//           "creditGpa",
+//           "yearGpa",
+//           "comprehensiveScore",
+//         ].includes(col.prop)
+//     );
+
+//     // 过滤掉所有课程成绩都为空的学生
+//     const filteredScores = scores.filter((score) => {
+//       // 检查是否至少有一门课程有成绩
+//       return courseCols.some((col) => {
+//         const courseScore = score[col.prop];
+//         return courseScore && courseScore.trim() !== "";
+//       });
+//     });
+
+//     // 处理每个学生的成绩
+//     tableData.value = filteredScores.map((score) => {
+//       // 计算每门课的绩点
+//       const courseGradePoints = {};
+
+//       // 动态获取所有课程成绩并计算绩点
+//       courseCols.forEach((col) => {
+//         courseGradePoints[col.prop] = calculateGradePoint(score[col.prop]);
+//       });
+
+//       // 计算学分绩点之和
+//       let totalCreditGpa = 0;
+//       let totalCredits = 0;
+//       let totalCreditGpaNonElective = 0;
+//       let totalCreditsNonElective = 0;
+
+//       Object.keys(courseGradePoints).forEach((courseName) => {
+//         const credit = courseCredits[courseName] || 0;
+//         const gradePoint = courseGradePoints[courseName];
+//         const creditGpa = credit * gradePoint;
+
+//         totalCreditGpa += creditGpa;
+//         totalCredits += credit;
+
+//         // 如果不是公选课，计入非公选课总和
+//         const nature = courseNature[courseName] || "";
+//         if (nature !== "公选课") {
+//           totalCreditGpaNonElective += creditGpa;
+//           totalCreditsNonElective += credit;
+//         }
+//       });
+
+//       // 计算学年绩点
+//       const yearGpa = totalCredits > 0 ? totalCreditGpa / totalCredits : 0;
+
+//       // 计算学业分成绩
+//       const nonElectiveGpa =
+//         totalCreditsNonElective > 0
+//           ? totalCreditGpaNonElective / totalCreditsNonElective
+//           : 0;
+//       const comprehensiveScore = (nonElectiveGpa + 5) * 9;
+
+//       return {
+//         ...score,
+//         creditGpa: parseFloat(totalCreditGpa.toFixed(2)),
+//         yearGpa: parseFloat(yearGpa.toFixed(2)),
+//         comprehensiveScore: parseFloat(comprehensiveScore.toFixed(2)),
+//       };
+//     });
+
+//     console.log("处理后的成绩数据:", tableData.value);
+//   } catch (error) {
+//     console.error("获取成绩数据失败:", error);
+//     ElMessage.error("获取成绩数据失败");
+//   }
+// };
 
 // 修改获取成绩数据的方法
 const getScoreData = async () => {
@@ -699,6 +854,11 @@ const getScoreData = async () => {
           "creditGpa",
           "yearGpa",
           "comprehensiveScore",
+          "academic",
+          "labor",
+          "sports",
+          "innovation",
+          "zongce",
         ].includes(col.prop)
     );
 
@@ -712,7 +872,8 @@ const getScoreData = async () => {
     });
 
     // 处理每个学生的成绩
-    tableData.value = filteredScores.map((score) => {
+    const processedScores = [];
+    for (const score of filteredScores) {
       // 计算每门课的绩点
       const courseGradePoints = {};
 
@@ -753,14 +914,38 @@ const getScoreData = async () => {
           : 0;
       const comprehensiveScore = (nonElectiveGpa + 5) * 9;
 
-      return {
+      // 获取各类活动加分
+      const academicScore = await getActivityScores(score.sno, "academic");
+      const laborScore = await getActivityScores(score.sno, "labor");
+      const sportsScore = await getActivityScores(score.sno, "sports");
+      const innovationScore = await getActivityScores(score.sno, "innovation");
+
+      // 计算综测分数
+      const academicTotal = comprehensiveScore + academicScore;
+      const laborTotal = 45 + laborScore;
+      const sportsTotal = 45 + sportsScore;
+      const innovationTotal = 40 + innovationScore;
+
+      const zongce =
+        academicTotal * 0.65 +
+        laborTotal * 0.05 +
+        sportsTotal * 0.05 +
+        innovationTotal * 0.15;
+
+      processedScores.push({
         ...score,
         creditGpa: parseFloat(totalCreditGpa.toFixed(2)),
         yearGpa: parseFloat(yearGpa.toFixed(2)),
         comprehensiveScore: parseFloat(comprehensiveScore.toFixed(2)),
-      };
-    });
+        academic: parseFloat(academicScore.toFixed(2)),
+        labor: parseFloat(laborScore.toFixed(2)),
+        sports: parseFloat(sportsScore.toFixed(2)),
+        innovation: parseFloat(innovationScore.toFixed(2)),
+        zongce: parseFloat(zongce.toFixed(2)),
+      });
+    }
 
+    tableData.value = processedScores;
     console.log("处理后的成绩数据:", tableData.value);
   } catch (error) {
     console.error("获取成绩数据失败:", error);
@@ -814,13 +999,24 @@ const handleSave = async () => {
                   "creditGpa",
                   "yearGpa",
                   "comprehensiveScore",
+                  "academic",
+                  "labor",
+                  "sports",
+                  "innovation",
+                  "zongce",
                 ].includes(col.prop)
             )
             .map((col) => [col.prop, item[col.prop]])
         ),
         credit_gpa: item.creditGpa,
         year_gpa: item.yearGpa,
-        comprehensive_score: item.comprehensiveScore,
+
+        academic: item.academic,
+        labor: item.labor,
+        sports: item.sports,
+        innovation: item.innovation,
+        zongce: item.zongce,
+        comprehensive: item.comprehensiveScore,
       })),
     };
 

@@ -10,7 +10,8 @@
         <el-table-column prop="activity_id" label="活动ID" width="100" />
         <el-table-column prop="activity_title" label="活动名称" width="200" />
         <el-table-column prop="student_sno" label="学生学号" width="150" />
-        <el-table-column prop="apply_time" label="申请时间" width="180">
+        <el-table-column prop="apply_time" label="申请时间" width="180" />
+        <el-table-column prop="credits" label="活动分" width="180">
           <template #default="scope">
             {{ formatDate(scope.row.apply_time) }}
           </template>
@@ -49,6 +50,9 @@
         </el-form-item>
         <el-form-item label="申请学生">
           <span>{{ currentActivity?.student_sno }}</span>
+        </el-form-item>
+        <el-form-item label="活动类型">
+          <span>{{ currentActivity?.category }}</span>
         </el-form-item>
         <el-form-item label="申请时间">
           <span>{{ formatDate(currentActivity?.apply_time) }}</span>
@@ -90,6 +94,8 @@ interface ReviewItem {
   activity_title: string;
   student_sno: string;
   teacher_id: number;
+  category: string;
+  credits: string;
   status: string;
   apply_time: string;
   review_time?: string;
@@ -164,6 +170,7 @@ const submitReview = async () => {
       review_id: currentActivity.value?.id,
       review_comment: reviewForm.value.review_comment,
       comment: reviewForm.value.comment,
+      category: currentActivity.value.category,
     });
 
     ElMessage.success("审核成功");

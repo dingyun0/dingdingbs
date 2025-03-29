@@ -127,12 +127,12 @@ export const menuData: Menus[] = [
         index: "/importScore",
         title: "导入成绩Excel",
       },
-      // {
-      //   id: "35",
-      //   pid: "3",
-      //   index: "/importSession",
-      //   title: "导入课程Excel",
-      // },
+      {
+        id: "35",
+        pid: "3",
+        index: "/importzongce",
+        title: "导出综测Excel",
+      },
       {
         id: "34",
         pid: "3",

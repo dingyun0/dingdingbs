@@ -73,3 +73,14 @@ export function getReviewMessage(student_sno: string) {
     params: { student_sno },
   });
 }
+
+// 获取活动分数
+export const getActivityScoresReq = (data: any) => {
+  console.log("11111111", data);
+
+  return request({
+    url: "/activity/activity-scores",
+    method: "get",
+    params: data,
+  });
+};

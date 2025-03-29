@@ -198,3 +198,52 @@ class ActivityService:
         except Exception as e:
             print("获取审核消息失败:", str(e))
             return {"code": 500, "msg": f"获取失败: {str(e)}", "data": None}
+        
+    
+    @staticmethod
+    async def activity_scores(student_sno: str, activity_category: str = None):
+        """
+        获取学生的活动分数
+        
+        Args:
+            student_sno: 学生学号
+            activity_category: 活动类型（可选）
+            
+        Returns:
+            活动分数列表
+        """
+        try:
+            # 获取活动分数
+            activities = await ActivityDAO.activity_scores(student_sno, activity_category)
+            
+            if not activities:
+                return {
+                    "code": 200,
+                    "msg": "未找到活动记录",
+                    "data": []
+                }
+            
+            # 格式化返回数据
+            result = []
+            for activity in activities:
+                result.append({
+                    "id": activity["id"],
+                    "activity_id": activity["activity_id"],
+                    "activity_title": activity["activity_title"],
+                    "activity_category": activity["activity_category"],
+                    "credits": float(activity["credits"]) if activity["credits"] else 0
+                })
+            
+            return {
+                "code": 200,
+                "msg": "获取成功",
+                "data": result
+            }
+            
+        except Exception as e:
+            print("获取活动分数失败:", str(e))
+            return {
+                "code": 500,
+                "msg": f"获取活动分数失败: {str(e)}",
+                "data": None
+            }

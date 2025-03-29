@@ -33,6 +33,8 @@ class ActivityApply(BaseModel):
     activity_title: str = Field(..., description="活动名称")
     teacher_id: int = Field(..., description="审核老师ID")
     student_sno: str = Field(..., description="申请学生学号")
+    activity_category:str=Field(...,description='活动类型')
+    credits:str=Field(...,description="活动分")
 
     class Config:
         from_attributes = True

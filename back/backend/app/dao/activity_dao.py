@@ -58,6 +58,8 @@ class ActivityDAO:
                 activity_title=apply_data.activity_title,
                 teacher_id=apply_data.teacher_id,
                 student_sno=apply_data.student_sno,
+                activity_category=apply_data.activity_category,
+                credits=apply_data.credits,
                 status="审核中"
             )
             return review
@@ -106,3 +108,41 @@ class ActivityDAO:
         return await ActivityReview.filter(
             student_sno=student_sno
         ).order_by("-apply_time")
+
+    @staticmethod
+    async def activity_scores(student_sno: str, activity_category: str = None):
+        """
+        获取学生的活动分数
+        
+        Args:
+            student_sno: 学生学号
+            activity_category: 活动类型（可选）
+            
+        Returns:
+            活动分数列表，每个元素包含活动ID、标题和学分
+        """
+        try:
+            # 构建基本查询
+            query = ActivityReview.filter(
+                student_sno=student_sno,
+                review_comment="审核通过"  # 只获取审核通过的活动
+            )
+            
+            # 如果指定了活动类型，添加类型过滤
+            if activity_category:
+                query = query.filter(activity_category=activity_category)
+            
+            # 获取活动记录
+            activities = await query.values(
+                'id',
+                'activity_id',
+                'activity_title',
+                'activity_category',
+                'credits'
+            )
+            
+            return activities
+            
+        except Exception as e:
+            print(f"获取活动分数失败: {str(e)}")
+            raise

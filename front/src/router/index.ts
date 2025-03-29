@@ -177,18 +177,18 @@ const routes: RouteRecordRaw[] = [
             /* webpackChunkName: "import" */ "../views/teacher/score/importScore.vue"
           ),
       },
-      // {
-      //   path: "/importzongce",
-      //   name: "importzongce",
-      //   meta: {
-      //     title: "导出综测",
-      //     permiss: "35",
-      //   },
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "import" */ "../views/teacher/score/exportZongce.vue"
-      //     ),
-      // },
+      {
+        path: "/importzongce",
+        name: "importzongce",
+        meta: {
+          title: "导出综测",
+          permiss: "35",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "import" */ "../views/teacher/score/exportZongce.vue"
+          ),
+      },
       {
         path: "/theme",
         name: "theme",
