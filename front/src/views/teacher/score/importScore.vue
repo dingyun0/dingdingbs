@@ -315,27 +315,39 @@ const handleConfirmBasicInfo = async () => {
   }
 };
 
-// 修改保存逻辑，加入筛选条件
+// 修改保存逻辑，加入筛选条件和动态课程成绩
 const handleSave = async () => {
   try {
+    // 获取课程字段列表
+    const courseFields = columns.value
+      .filter((col) => !["id", "sno", "name", "class_name"].includes(col.prop))
+      .map((col) => col.label);
+
     const data = {
-      department: filterForm.value.department,
-      major: filterForm.value.major,
-      grade: filterForm.value.grade,
-      scores: tableData.value.map((item) => ({
-        name: item.name,
-        sno: item.sno,
-        class_name: item.class_name,
-        操作系统课程设计成绩: item.操作系统课程设计成绩,
-        无线网络技术成绩: item.无线网络技术成绩,
-        计算机网络课程设计: item.计算机网络课程设计,
-        操作系统: item.操作系统,
-        人工智能与网络技术学科前沿: item.人工智能与网络技术学科前沿,
-        信息安全原理及应用: item.信息安全原理及应用,
-        Linux操作系统: item.Linux操作系统,
-        Java程序设计: item.Java程序设计,
-      })),
+      scores: tableData.value.map((item) => {
+        // 创建基础学生信息
+        const scoreData = {
+          name: item.name,
+          sno: item.sno,
+          class_name: item.class_name,
+        };
+
+        // 动态添加课程成绩
+        columns.value
+          .filter(
+            (col) => !["id", "sno", "name", "class_name"].includes(col.prop)
+          )
+          .forEach((col) => {
+            scoreData[col.label] = item[col.prop] || "";
+          });
+
+        return scoreData;
+      }),
+      course_fields: courseFields, // 添加课程字段列表
     };
+
+    console.log("发送到后端的数据:", JSON.stringify(data, null, 2));
+
     await saveScoreReq(data);
     ElMessage.success("保存成功");
     tableData.value = [];
@@ -344,6 +356,7 @@ const handleSave = async () => {
       major: "",
       grade: "",
     };
+    hasSetBasicInfo.value = false;
   } catch (error) {
     console.error("保存失败:", error);
     ElMessage.error(error.response?.data?.msg || "保存失败");

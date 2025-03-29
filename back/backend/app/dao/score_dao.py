@@ -9,6 +9,9 @@ from backend.app.schemas.score import ScoreBase
 
 class ScoreDao(DaoBase):
     """成绩数据访问对象"""
+    
+    def __init__(self):
+        super().__init__(Score)
 
     @atomic()
     async def save_scores(self, scores: List[ScoreBase]):
@@ -32,8 +35,38 @@ class ScoreDao(DaoBase):
             print("DAO层错误:", str(e))
             raise
 
+    async def get_scores_by_courses(self, courses):
+        """
+        根据课程列表获取成绩
+        
+        Args:
+            courses: 课程列表
+            
+        Returns:
+            成绩列表
+        """
+        try:
+            # 获取所有学生的成绩记录
+            scores = await self.model.all()
+            
+            # 过滤出有对应课程成绩的学生
+            filtered_scores = []
+            for score in scores:
+                has_course_score = False
+                for course in courses:
+                    if hasattr(score, course.course_name) and getattr(score, course.course_name):
+                        has_course_score = True
+                        break
+                if has_course_score:
+                    filtered_scores.append(score)
+            
+            return filtered_scores
+        except Exception as e:
+            print(f"获取成绩失败: {str(e)}")
+            raise
+
 
 
 
 # 创建全局实例
-score_dao = ScoreDao(Score)
+score_dao = ScoreDao()

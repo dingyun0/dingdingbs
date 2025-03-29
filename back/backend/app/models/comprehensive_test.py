@@ -15,8 +15,8 @@ class ComprehensiveTest(Model):
     Java程序设计 = fields.CharField(max_length=50, null=True, description="Java程序设计")
     credit_gpa = fields.DecimalField(max_digits=10, decimal_places=2, description="学分绩点")
     year_gpa = fields.DecimalField(max_digits=10, decimal_places=2, description="学年绩点")
-    comprehensive_score = fields.DecimalField(max_digits=10, decimal_places=2, description="综测成绩")
+    comprehensive_score = fields.DecimalField(max_digits=10, decimal_places=2, description="学业分")
     
     class Meta:
         table = "comprehensive_tests"
-        table_description = "综合测评表"
+        table_description = "学业分计算"

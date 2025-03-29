@@ -72,30 +72,7 @@ const routes: RouteRecordRaw[] = [
             /* webpackChunkName: "system-role" */ "../views/admin/management/teacher.vue"
           ),
       },
-      {
-        path: "/table",
-        name: "basetable",
-        meta: {
-          title: "基础表格",
-          permiss: "31",
-        },
-        component: () =>
-          import(
-            /* webpackChunkName: "table" */ "../views/table/basetable.vue"
-          ),
-      },
-      {
-        path: "/table-editor",
-        name: "table-editor",
-        meta: {
-          title: "可编辑表格",
-          permiss: "32",
-        },
-        component: () =>
-          import(
-            /* webpackChunkName: "table-editor" */ "../views/table/table-editor.vue"
-          ),
-      },
+
       {
         path: "/schart",
         name: "schart",
@@ -119,18 +96,6 @@ const routes: RouteRecordRaw[] = [
           ),
       },
 
-      // {
-      //   path: "/announcement/activate",
-      //   name: "activate",
-      //   meta: {
-      //     title: "活动公告",
-      //     permiss: "51",
-      //   },
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "icon" */ "../views/admin/announcement/activate.vue"
-      //     ),
-      // },
       {
         path: "/announcement/scholarship",
         name: "scholarship",
@@ -192,7 +157,7 @@ const routes: RouteRecordRaw[] = [
         path: "/exportComprehensive",
         name: "exportComprehensive",
         meta: {
-          title: "导出综测Excel",
+          title: "导出学业分Excel",
           permiss: "34",
         },
         component: () =>
@@ -212,18 +177,18 @@ const routes: RouteRecordRaw[] = [
             /* webpackChunkName: "import" */ "../views/teacher/score/importScore.vue"
           ),
       },
-      {
-        path: "/importSession",
-        name: "importSession",
-        meta: {
-          title: "导入课程Excel",
-          permiss: "35",
-        },
-        component: () =>
-          import(
-            /* webpackChunkName: "import" */ "../views/teacher/score/importSession.vue"
-          ),
-      },
+      // {
+      //   path: "/importzongce",
+      //   name: "importzongce",
+      //   meta: {
+      //     title: "导出综测",
+      //     permiss: "35",
+      //   },
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "import" */ "../views/teacher/score/exportZongce.vue"
+      //     ),
+      // },
       {
         path: "/theme",
         name: "theme",
@@ -238,7 +203,7 @@ const routes: RouteRecordRaw[] = [
         path: "/showComprehensive",
         name: "showComprehensive",
         meta: {
-          title: "查看综测",
+          title: "查看学业分",
           permiss: "8",
         },
         component: () =>
@@ -304,6 +269,42 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import(
             /* webpackChunkName: "theme" */ "../views/student/activity/showActivity.vue"
+          ),
+      },
+      {
+        path: "/activity/reviewMessage",
+        name: "reviewMessage",
+        meta: {
+          title: "查看活动审核结果",
+          permiss: "112",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "theme" */ "../views/student/activity/reviewMessage.vue"
+          ),
+      },
+      {
+        path: "/activity/reviewActivity",
+        name: "reviewActivity",
+        meta: {
+          title: "审核学生活动申请",
+          permiss: "121",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "theme" */ "../views/teacher/activity/reviewActivity.vue"
+          ),
+      },
+      {
+        path: "/importSession",
+        name: "importSession",
+        meta: {
+          title: "导入所有课程",
+          permiss: "131",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "theme" */ "../views/admin/session/importSession.vue"
           ),
       },
 

@@ -20,9 +20,9 @@ async def get_all_tests():
     """
     return await ComprehensiveTestService.get_all_tests()
 
-@router.get('/student/{sno}', summary="获取学生综测信息")
+@router.get('/student/{sno}', summary="获取学生学业分信息")
 async def get_student_test(sno: str):
     """
-    获取指定学号的学生综测信息
+    获取指定学号的学生学业分信息
     """
     return await ComprehensiveTestService.get_test_by_sno(sno) 

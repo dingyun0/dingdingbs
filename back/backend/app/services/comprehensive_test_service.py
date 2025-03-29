@@ -61,7 +61,7 @@ class ComprehensiveTestService:
             if not test:
                 return {
                     "code": 404,
-                    "message": "未找到该学生的综测信息",
+                    "message": "未找到该学生的学业分信息",
                     "data": None
                 }
             
@@ -87,5 +87,5 @@ class ComprehensiveTestService:
                 }
             }
         except Exception as e:
-            logging.error(f"获取综测信息失败: {str(e)}", exc_info=True)
-            raise CustomError(msg=f"获取综测信息失败: {str(e)}", code=500) 
+            logging.error(f"获取学业分信息失败: {str(e)}", exc_info=True)
+            raise CustomError(msg=f"获取学业分信息失败: {str(e)}", code=500) 

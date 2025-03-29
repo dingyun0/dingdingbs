@@ -47,9 +47,11 @@ export const usePermissStore = defineStore("permiss", {
         "66",
         "10",
         "101",
+        "13",
+        "131",
       ],
-      teacher: ["0", "3", "31", "32", "33", "34", "35", "7"],
-      student: ["0", "8", "7", "9", "91", "92", "111"],
+      teacher: ["0", "3", "31", "32", "33", "34", "7", "121"],
+      student: ["0", "8", "7", "9", "91", "92", "11", "111", "112"],
     };
     const username = localStorage.getItem("vuems_name");
     console.log(username);

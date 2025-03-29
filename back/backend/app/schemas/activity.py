@@ -36,3 +36,8 @@ class ActivityApply(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ReviewRequest(BaseModel):
+    review_id: int
+    review_comment: str
+    comment: str

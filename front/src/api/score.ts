@@ -9,9 +9,17 @@ export const saveScoreReq = (prama: any) => {
   });
 };
 
-export const getScoreAll = () => {
+export const getScoreAll = (data: any) => {
   return request({
     url: "/scores/all",
+    method: "get",
+    data: data,
+  });
+};
+
+export const getRecordedClassesReq = () => {
+  return request({
+    url: "/scores/recorded-classes",
     method: "get",
   });
 };

@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, Query
-from backend.app.schemas.activity import ActivityApply, CreateActivity, UpdateActivity, ActivityInfo
+from backend.app.schemas.activity import ActivityApply, CreateActivity, ReviewRequest, UpdateActivity, ActivityInfo
 from backend.app.services.activity_service import ActivityService
 from backend.app.common.jwt import DependsJwtUser
+from backend.app.models.teacher import Teacher  # 添加这行
 
 router = APIRouter()
 
@@ -50,3 +51,56 @@ async def apply_activity(apply_data: ActivityApply):
     except Exception as e:
         print("申请活动接口错误:", str(e))
         return {"code": 500, "msg": f"申请失败: {str(e)}", "data": None}
+
+@router.get('/getReviewActivity', summary="获取要审核的活动列表")
+async def review_activity(current_user = DependsJwtUser):
+    """
+    获取教师需要审核的活动列表
+    """
+    try:
+        # 从Teacher表中获取教师ID
+        teacher = await Teacher.get_or_none(user_id=current_user.id)
+        print('111111111',teacher.id)
+        if not teacher:
+            return {"code": 400, "msg": "未找到教师信息", "data": None}
+            
+        return await ActivityService.get_review_activities(teacher.id)
+    except Exception as e:
+        print("获取审核列表失败:", str(e))
+        return {"code": 500, "msg": f"获取失败: {str(e)}", "data": None}
+
+
+@router.post('/handleReviewActivity', summary='审核学生活动')
+async def handle_review_activity(review_data: ReviewRequest, current_user = DependsJwtUser):
+    """
+    审核学生活动申请
+    - review_id: 审核记录ID
+    - status: 审核结果（通过/不通过）
+    - comment: 审核意见
+    """
+    try:
+        # 验证教师身份
+        teacher = await Teacher.get_or_none(user_id=current_user.id)
+        if not teacher:
+            return {"code": 400, "msg": "未找到教师信息", "data": None}
+            
+        return await ActivityService.handle_review(
+            review_id=review_data.review_id,
+            review_comment=review_data.review_comment,
+            comment=review_data.comment
+        )
+    except Exception as e:
+        print("审核活动失败:", str(e))
+        return {"code": 500, "msg": f"审核失败: {str(e)}", "data": None}
+    
+@router.get('/getReviewMessage', summary='获取当前学号的审核情况')
+async def get_review_message(student_sno: str):
+    """
+    获取学生的活动审核情况
+    - student_sno: 学生学号
+    """
+    try:
+        return await ActivityService.get_review_message(student_sno)
+    except Exception as e:
+        print("获取审核消息失败:", str(e))
+        return {"code": 500, "msg": f"获取失败: {str(e)}", "data": None}

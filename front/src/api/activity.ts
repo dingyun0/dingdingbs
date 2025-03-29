@@ -41,3 +41,35 @@ export function applyActivityReq(data: any) {
     data: data,
   });
 }
+
+export function getReviewListReq() {
+  return request({
+    url: "/activity/getReviewActivity",
+    method: "get",
+  });
+}
+
+export function reviewActivity(data: any) {
+  return request({
+    url: "/activity/handleReviewActivity",
+    method: "post",
+    data: data,
+  });
+}
+
+export function getReviewMessageReq(data: any) {
+  return request({
+    url: "/activity/getReviewMessage",
+    method: "get",
+    data: data,
+  });
+}
+
+// 获取审核消息
+export function getReviewMessage(student_sno: string) {
+  return request({
+    url: "/activity/getReviewMessage",
+    method: "get",
+    params: { student_sno },
+  });
+}

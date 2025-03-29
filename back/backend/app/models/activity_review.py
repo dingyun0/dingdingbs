@@ -14,7 +14,8 @@ class ActivityReview(Model):
     status = fields.CharField(max_length=20, description="审核状态", default="已申请")  # pending, approved, rejected
     apply_time = fields.DatetimeField(description="申请时间", auto_now_add=True)
     review_time = fields.DatetimeField(description="审核时间", null=True)
-    review_comment = fields.TextField(description="审核意见", default="未通过")
+    review_comment = fields.TextField(description="审核意见", default="审核中")
+    comment=fields.TextField(description="审核评论", null=True)
     
     # 外键关联
     # activity = fields.ForeignKeyField(

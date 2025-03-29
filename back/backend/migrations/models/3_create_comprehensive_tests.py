@@ -17,7 +17,7 @@ async def upgrade(db: BaseDBAsyncClient) -> str:
             `Java程序设计` VARCHAR(50) NULL COMMENT 'Java程序设计',
             `credit_gpa` DECIMAL(10,2) NOT NULL COMMENT '学分绩点',
             `year_gpa` DECIMAL(10,2) NOT NULL COMMENT '学年绩点',
-            `comprehensive_score` DECIMAL(10,2) NOT NULL COMMENT '综测成绩'
+            `comprehensive_score` DECIMAL(10,2) NOT NULL COMMENT '学业分成绩'
         ) CHARACTER SET utf8mb4 COMMENT '综合测评表';
     """
 

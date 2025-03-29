@@ -1,20 +1,47 @@
-from typing import List
-from pydantic import BaseModel, Field
+from typing import List, Dict, Any
+from pydantic import BaseModel, Field, create_model
 from backend.app.schemas.base import SchemaBase
 
 class ScoreBase(SchemaBase):
     name: str
     sno: str  
     class_name: str
-    操作系统课程设计成绩: str | None = None
-    无线网络技术成绩: str | None = None
-    计算机网络课程设计: str | None = None
-    操作系统: str | None = None
-    人工智能与网络技术学科前沿: str | None = None
-    信息安全原理及应用: str | None = None
-    Linux操作系统: str | None = None
-    Java程序设计: str | None = None
+    
+    @classmethod
+    def create_dynamic_model(cls, course_fields: List[str]):
+        """
+        动态创建包含指定课程字段的模型
+        
+        Args:
+            course_fields: 课程字段列表
+            
+        Returns:
+            动态创建的模型类
+        """
+        field_definitions = {
+            "name": (str, ...),
+            "sno": (str, ...),
+            "class_name": (str, ...),
+        }
+        
+        # 添加动态课程字段
+        for field in course_fields:
+            field_definitions[field] = (str | None, None)
+            
+        return create_model(
+            "DynamicScoreBase",
+            **field_definitions,
+            __base__=SchemaBase
+        )
 
 class SaveScore(SchemaBase):
-    scores: List[ScoreBase]
+    scores: List[Dict[str, Any]]  # 改为接收任意字典列表
+    course_fields: List[str]  # 添加课程字段列表
+    
+    def get_validated_scores(self):
+        """
+        验证并返回符合动态模型的成绩列表
+        """
+        DynamicModel = ScoreBase.create_dynamic_model(self.course_fields)
+        return [DynamicModel(**score) for score in self.scores]
     

@@ -75,12 +75,12 @@
         />
         <el-table-column
           prop="comprehensive_score"
-          label="综测成绩"
+          label="学业分成绩"
           width="100"
           show-overflow-tooltip
         />
       </el-table>
-      <el-empty v-else description="暂无综测信息" />
+      <el-empty v-else description="暂无学业分信息" />
     </div>
   </div>
 </template>

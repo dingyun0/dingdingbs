@@ -122,34 +122,22 @@ export const menuData: Menus[] = [
     icon: "Calendar",
     children: [
       {
-        id: "31",
-        pid: "3",
-        index: "/table",
-        title: "基础表格",
-      },
-      {
-        id: "32",
-        pid: "3",
-        index: "/table-editor",
-        title: "可编辑表格",
-      },
-      {
         id: "33",
         pid: "3",
         index: "/importScore",
         title: "导入成绩Excel",
       },
-      {
-        id: "35",
-        pid: "3",
-        index: "/importSession",
-        title: "导入课程Excel",
-      },
+      // {
+      //   id: "35",
+      //   pid: "3",
+      //   index: "/importSession",
+      //   title: "导入课程Excel",
+      // },
       {
         id: "34",
         pid: "3",
         index: "/exportComprehensive",
-        title: "导出综测Excel",
+        title: "导出学业分Excel",
       },
     ],
   },
@@ -232,16 +220,51 @@ export const menuData: Menus[] = [
     title: "活动",
   },
   {
-    id: "111",
+    id: "11",
+    icon: "Guide",
+    index: "11",
+    title: "活动",
+    children: [
+      {
+        id: "111",
+        pid: "Calendar",
+        index: "/activity/showActivity",
+        title: "查看活动",
+      },
+      {
+        id: "112",
+        pid: "Calendar",
+        index: "/activity/reviewMessage",
+        title: "查看活动审核结果",
+      },
+    ],
+  },
+
+  {
+    id: "121",
     icon: "Calendar",
-    index: "/activity/showActivity",
-    title: "查看活动",
+    index: "/activity/reviewActivity",
+    title: "审核学生活动申请",
+  },
+  {
+    id: "13",
+    icon: "Guide",
+    index: "13",
+    title: "导入课程",
+    children: [
+      {
+        id: "131",
+        pid: "Calendar",
+        index: "/importSession",
+        title: "导入课程",
+      },
+    ],
   },
   {
     id: "8",
     icon: "Calendar",
     index: "/showComprehensive",
-    title: "查看综测成绩",
+    title: "查看学业分成绩",
   },
   {
     id: "7",

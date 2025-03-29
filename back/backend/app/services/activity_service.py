@@ -103,3 +103,98 @@ class ActivityService:
         except Exception as e:
             print("申请活动失败:", str(e))
             return {"code": 500, "msg": f"申请失败: {str(e)}", "data": None}
+    
+    @staticmethod
+    async def get_review_activities(teacher_id: int):
+        """获取教师需要审核的活动列表"""
+        try:
+            # 获取待审核的活动列表
+            reviews = await ActivityDAO.get_review_activities(teacher_id)
+            
+            # 转换为列表格式
+            review_list = []
+            for review in reviews:
+                review_list.append({
+                    "id": review.id,
+                    "activity_id": review.activity_id,
+                    "activity_title": review.activity_title,
+                    "student_sno": review.student_sno,
+                    "teacher_id": review.teacher_id,
+                    "status": review.status,
+                    "apply_time": review.apply_time.isoformat(),
+                    "review_time": review.review_time.isoformat() if review.review_time else None,
+                    "review_comment": review.review_comment
+                })
+            
+            return {
+                "code": 200,
+                "msg": "获取成功",
+                "data": review_list
+            }
+        except Exception as e:
+            print("获取审核列表失败:", str(e))
+            return {"code": 500, "msg": f"获取失败: {str(e)}", "data": None}
+
+
+    @staticmethod
+    async def handle_review(review_id: int, review_comment: str, comment: str):
+        """处理活动审核"""
+        try:
+            # 检查审核记录是否存在
+            review = await ActivityDAO.get_review_by_id(review_id)
+            if not review:
+                return {"code": 404, "msg": "审核记录不存在", "data": None}
+            
+            print("当前审核状态:", review.review_comment)  # 添加调试信息
+            
+            # 检查是否已经审核过
+            if review.review_comment != "审核中":
+                return {"code": 400, "msg": "该申请已经审核过", "data": None}
+            
+            # 更新审核状态
+            result = await ActivityDAO.update_review_status(review_id, review_comment, comment)
+            
+            return {
+                "code": 200,
+                "msg": "审核成功",
+                "data": {
+                    "id": result.id,
+                    "review_comment": result.review_comment,
+                    "comment": result.comment,
+                    "review_time": result.review_time.isoformat() if result.review_time else None
+                }
+            }
+        except Exception as e:
+            print("审核活动失败:", str(e))
+            return {"code": 500, "msg": f"审核失败: {str(e)}", "data": None}
+        
+    @staticmethod
+    async def get_review_message(student_sno: str):
+        """获取学生的活动审核情况"""
+        try:
+            # 获取学生的审核记录
+            reviews = await ActivityDAO.get_review_message(student_sno)
+            
+            # 转换为列表格式
+            review_list = []
+            for review in reviews:
+                review_list.append({
+                    "id": review.id,
+                    "activity_id": review.activity_id,
+                    "activity_title": review.activity_title,
+                    "student_sno": review.student_sno,
+                    "teacher_id": review.teacher_id,
+                    "status": review.status,
+                    "apply_time": review.apply_time.isoformat(),
+                    "review_time": review.review_time.isoformat() if review.review_time else None,
+                    "comment": review.comment
+                })
+            
+            return {
+                "code": 200,
+                "msg": "获取成功",
+                "data": review_list
+            }
+        except Exception as e:
+            print("获取审核消息失败:", str(e))
+            return {"code": 500, "msg": f"获取失败: {str(e)}", "data": None}
