@@ -11,6 +11,7 @@ from backend.app.models import student
 from backend.app.models import teacher
 from backend.app.models import activity
 from backend.app.models import activity_review
+from backend.app.models import college
 
 # 新增model后，在list引入模块文件
 models = [
@@ -22,7 +23,8 @@ models = [
     student,
     teacher,
     activity,
-    activity_review
+    activity_review,
+    college
 ]
 
-__all__ = ['User', 'Score', 'Announcement', 'Session', 'ComprehensiveTest', 'Student','Teacher','activity','activity_review']
+__all__ = ['User', 'Score', 'Announcement', 'Session', 'ComprehensiveTest', 'Student','Teacher','activity','activity_review','college']

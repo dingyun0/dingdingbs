@@ -10,7 +10,6 @@ export const usePermissStore = defineStore("permiss", {
       admin: [
         "0",
         "1",
-        "11",
         "12",
         "13",
         "14",
@@ -35,6 +34,7 @@ export const usePermissStore = defineStore("permiss", {
         "41",
         "42",
         "5",
+        "51",
         "52",
         "53",
         "7",
@@ -45,14 +45,49 @@ export const usePermissStore = defineStore("permiss", {
         "64",
         "65",
         "66",
-        "10",
-        "101",
         "13",
         "131",
+        "151",
+        "171",
       ],
-      teacher: ["0", "3", "31", "32", "33", "34", "35", "7", "121"],
-      student: ["0", "8", "7", "9", "91", "92", "11", "111", "112"],
+      teacher: [
+        "0",
+        "3",
+        "31",
+        "32",
+        "33",
+        "34",
+        "7",
+        "12",
+        "16",
+        "161",
+        "151",
+      ],
+      student: [
+        "0",
+        "8",
+        "81",
+        "7",
+        "9",
+        "91",
+        "92",
+        "11",
+        "111",
+        "112",
+        "151",
+      ],
     };
+
+    // 首先尝试从localStorage恢复权限
+    const savedPermissions = localStorage.getItem("vuems_permissions");
+    if (savedPermissions) {
+      return {
+        key: JSON.parse(savedPermissions),
+        defaultList,
+      };
+    }
+
+    // 如果没有保存的权限，则根据用户名分配默认权限
     const username = localStorage.getItem("vuems_name");
     console.log(username);
     let key: string[] = [];
@@ -63,6 +98,12 @@ export const usePermissStore = defineStore("permiss", {
     } else if (username == "student") {
       key = defaultList.student;
     }
+
+    // 保存默认权限到localStorage
+    if (key.length > 0) {
+      localStorage.setItem("vuems_permissions", JSON.stringify(key));
+    }
+
     return {
       key,
       defaultList,
@@ -71,6 +112,13 @@ export const usePermissStore = defineStore("permiss", {
   actions: {
     handleSet(val: string[]) {
       this.key = val;
+      // 当设置新的权限时，同时保存到localStorage
+      localStorage.setItem("vuems_permissions", JSON.stringify(val));
+    },
+    // 清除权限信息
+    clearPermissions() {
+      this.key = [];
+      localStorage.removeItem("vuems_permissions");
     },
   },
 });

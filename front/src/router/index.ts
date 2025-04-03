@@ -24,18 +24,7 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import(/* webpackChunkName: "dashboard" */ "../views/dashboard.vue"),
       },
-      {
-        path: "/management-user",
-        name: "management-user",
-        meta: {
-          title: "奖学金计算规则管理",
-          permiss: "11",
-        },
-        component: () =>
-          import(
-            /* webpackChunkName: "system-user" */ "../views/admin/management/user.vue"
-          ),
-      },
+
       {
         path: "/management-allUsers",
         name: "management-allUsers",
@@ -96,6 +85,18 @@ const routes: RouteRecordRaw[] = [
           ),
       },
 
+      {
+        path: "/announcement/activity",
+        name: "activity",
+        meta: {
+          title: "活动公告",
+          permiss: "51",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "icon" */ "../views/admin/announcement/activity.vue"
+          ),
+      },
       {
         path: "/announcement/scholarship",
         name: "scholarship",
@@ -177,18 +178,7 @@ const routes: RouteRecordRaw[] = [
             /* webpackChunkName: "import" */ "../views/teacher/score/importScore.vue"
           ),
       },
-      {
-        path: "/importzongce",
-        name: "importzongce",
-        meta: {
-          title: "导出综测",
-          permiss: "35",
-        },
-        component: () =>
-          import(
-            /* webpackChunkName: "import" */ "../views/teacher/score/exportZongce.vue"
-          ),
-      },
+
       {
         path: "/theme",
         name: "theme",
@@ -247,18 +237,18 @@ const routes: RouteRecordRaw[] = [
       //       /* webpackChunkName: "theme" */ "../views/student/showAnnouncement/activate.vue"
       //     ),
       // },
-      {
-        path: "/activity/activity",
-        name: "activity",
-        meta: {
-          title: "活动",
-          permiss: "101",
-        },
-        component: () =>
-          import(
-            /* webpackChunkName: "theme" */ "../views/admin/activity/activity.vue"
-          ),
-      },
+      // {
+      //   path: "/activity/activity",
+      //   name: "activity",
+      //   meta: {
+      //     title: "活动",
+      //     permiss: "101",
+      //   },
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "theme" */ "../views/admin/announcement/activity.vue"
+      //     ),
+      // },
       {
         path: "/activity/showActivity",
         name: "showActivity",
@@ -288,11 +278,23 @@ const routes: RouteRecordRaw[] = [
         name: "reviewActivity",
         meta: {
           title: "审核学生活动申请",
-          permiss: "121",
+          permiss: "161",
         },
         component: () =>
           import(
             /* webpackChunkName: "theme" */ "../views/teacher/activity/reviewActivity.vue"
+          ),
+      },
+      {
+        path: "/college/collegeMajor",
+        name: "collegeMajor",
+        meta: {
+          title: "学院专业管理",
+          permiss: "171",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "theme" */ "../views/admin/college/college_major.vue"
           ),
       },
       {
@@ -306,6 +308,16 @@ const routes: RouteRecordRaw[] = [
           import(
             /* webpackChunkName: "theme" */ "../views/admin/session/importSession.vue"
           ),
+      },
+      {
+        path: "/ucenter",
+        name: "ucenter",
+        meta: {
+          title: "个人中心",
+          permiss: "151",
+        },
+        component: () =>
+          import(/* webpackChunkName: "theme" */ "../views/common/ucenter.vue"),
       },
 
       {

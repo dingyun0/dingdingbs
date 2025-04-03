@@ -14,12 +14,6 @@ export const menuData: Menus[] = [
     icon: "HomeFilled",
     children: [
       {
-        id: "11",
-        pid: "1",
-        index: "/management-user",
-        title: "奖学金规则管理",
-      },
-      {
         id: "12",
         pid: "1",
         index: "/management-allUsers",
@@ -117,7 +111,7 @@ export const menuData: Menus[] = [
   },
   {
     id: "3",
-    title: "表格",
+    title: "成绩管理",
     index: "3",
     icon: "Calendar",
     children: [
@@ -127,17 +121,12 @@ export const menuData: Menus[] = [
         index: "/importScore",
         title: "导入成绩Excel",
       },
-      {
-        id: "35",
-        pid: "3",
-        index: "/importzongce",
-        title: "导出综测Excel",
-      },
+
       {
         id: "34",
         pid: "3",
         index: "/exportComprehensive",
-        title: "导出学业分Excel",
+        title: "导出综测Excel",
       },
     ],
   },
@@ -165,14 +154,14 @@ export const menuData: Menus[] = [
     id: "5",
     icon: "Guide",
     index: "5",
-    title: "公告",
+    title: "公告管理",
     children: [
-      // {
-      //   id: "51",
-      //   pid: "5",
-      //   index: "/announcement/activate",
-      //   title: "活动公告",
-      // },
+      {
+        id: "51",
+        pid: "5",
+        index: "/announcement/activity",
+        title: "活动公告",
+      },
       {
         id: "52",
         pid: "5",
@@ -191,7 +180,7 @@ export const menuData: Menus[] = [
     id: "9",
     icon: "Guide",
     index: "9",
-    title: "公告",
+    title: "查看公告",
     children: [
       {
         id: "91",
@@ -213,17 +202,23 @@ export const menuData: Menus[] = [
       // },
     ],
   },
+  // {
+  //   id: "10",
+  //   icon: "Calendar",
+  //   index: "/activity/activity",
+  //   title: "活动",
+  // },
   {
-    id: "10",
-    icon: "Calendar",
-    index: "/activity/activity",
-    title: "活动",
+    id: "171",
+    icon: "Guide",
+    index: "/college/collegeMajor",
+    title: "学院管理",
   },
   {
     id: "11",
     icon: "Guide",
     index: "11",
-    title: "活动",
+    title: "查看活动",
     children: [
       {
         id: "111",
@@ -241,16 +236,24 @@ export const menuData: Menus[] = [
   },
 
   {
-    id: "121",
-    icon: "Calendar",
-    index: "/activity/reviewActivity",
-    title: "审核学生活动申请",
+    id: "16",
+    icon: "Guide",
+    index: "16",
+    title: "审核管理",
+    children: [
+      {
+        id: "161",
+        pid: "Calendar",
+        index: "/activity/reviewActivity",
+        title: "审核学生活动申请",
+      },
+    ],
   },
   {
     id: "13",
     icon: "Guide",
     index: "13",
-    title: "导入课程",
+    title: "课程管理",
     children: [
       {
         id: "131",
@@ -264,14 +267,29 @@ export const menuData: Menus[] = [
     id: "8",
     icon: "Calendar",
     index: "/showComprehensive",
-    title: "查看学业分成绩",
+    title: "查看成绩",
+    children: [
+      {
+        id: "81",
+        pid: "8",
+        index: "/showComprehensive",
+        title: "查看综测成绩",
+      },
+    ],
   },
   {
     id: "7",
     icon: "Brush",
     index: "/theme",
-    title: "主题",
+    title: "主题管理",
   },
+  {
+    id: "151",
+    icon: "Calendar",
+    index: "/ucenter",
+    title: "个人中心",
+  },
+
   {
     id: "6",
     icon: "DocumentAdd",
