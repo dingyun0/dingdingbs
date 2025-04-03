@@ -130,7 +130,8 @@ async def update_teacher_role(teacher_data: UpdateTeacherRole):
             teacher_data={
                 "department": teacher_data.department,
                 "major": teacher_data.major,
-                "title": teacher_data.title
+                "title": teacher_data.title,
+                "name":teacher_data.name
             }
         )
         return await response_base.success(data=result, msg="更新成功")

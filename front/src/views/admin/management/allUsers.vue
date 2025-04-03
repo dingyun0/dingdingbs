@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts" name="system-user">
-import { ref, reactive } from "vue";
+import { ref, reactive, onBeforeMount } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { CirclePlusFilled } from "@element-plus/icons-vue";
 import { User } from "@/types/user";
@@ -52,11 +52,70 @@ import {
   deleteUserReq,
   updateTeacherRoleReq,
 } from "@/api";
+import { getCollegeList } from "@/api/college";
 import TableCustom from "@/components/table-custom.vue";
 import TableDetail from "@/components/table-detail.vue";
 import TableSearch from "@/components/table-search.vue";
 import { FormOption, FormOptionList } from "@/types/form-option";
 import TableEdit from "@/components/table-edit.vue";
+
+// 存储从API获取的学院数据
+const collegeData = ref<any[]>([]);
+interface EditUserData {
+  id?: number;
+  username?: string;
+  roles?: string | string[];
+  department?: string;
+  major?: string;
+  title?: string;
+  teacher_id?: string;
+}
+// 获取学院数据
+const fetchCollegeData = async () => {
+  try {
+    const res = await getCollegeList();
+    if (res.data) {
+      collegeData.value = res.data;
+    }
+  } catch (error) {
+    console.error("获取学院数据失败:", error);
+    ElMessage.error("获取学院数据失败");
+  }
+};
+
+// 处理学院数据为下拉选项格式
+const getDepartments = () => {
+  const deptMap = new Map();
+  collegeData.value.forEach((item) => {
+    if (!deptMap.has(item.department)) {
+      deptMap.set(item.department, {
+        label: item.department,
+        value: item.department,
+        majors: new Set(),
+      });
+    }
+    deptMap.get(item.department).majors.add(item.major);
+  });
+  return Array.from(deptMap.values()).map((dept) => ({
+    label: dept.label,
+    value: dept.value,
+    majors: Array.from(dept.majors),
+  }));
+};
+
+// 获取指定学院的专业列表
+const getMajors = (department: string) => {
+  console.log("拿到的学院是", department);
+
+  const dept = getDepartments().find((d) => d.value === department);
+  if (dept) {
+    return dept.majors.map((major) => ({
+      label: major as string,
+      value: major as string,
+    }));
+  }
+  return [];
+};
 
 // 查询相关
 const query = reactive({
@@ -103,7 +162,6 @@ const getData = async () => {
     ElMessage.error("获取用户数据失败");
   }
 };
-getData();
 
 const changePage = async (val: number) => {
   console.log("changePage被调用，新页码:", val);
@@ -115,8 +173,13 @@ const changePage = async (val: number) => {
 // 监听角色选择变化
 const handleRoleChange = (value: string) => {
   console.log("角色变更为:", value);
+  // 更新 rowData 中的角色
+  if (rowData.value) {
+    rowData.value.roles = [value];
+  }
 
   if (value === "teacher") {
+    const departments = getDepartments();
     options.value.list = [
       {
         type: "select",
@@ -142,20 +205,17 @@ const handleRoleChange = (value: string) => {
         label: "学院",
         prop: "department",
         required: true,
-        options: [
-          { label: "计算机学院", value: "计算机学院" },
-          { label: "信息工程学院", value: "信息工程学院" },
-        ],
+        options: departments,
+        change: handleDepartmentChange as (value: any) => void,
       },
       {
         type: "select",
         label: "专业",
         prop: "major",
         required: true,
-        options: [
-          { label: "计算机科学与技术", value: "计算机科学与技术" },
-          { label: "软件工程", value: "软件工程" },
-        ],
+        options: rowData.value.department
+          ? getMajors(rowData.value.department)
+          : [],
       },
       {
         type: "input",
@@ -205,14 +265,19 @@ let options = ref<FormOption>({
 });
 const visible = ref(false);
 const isEdit = ref(false);
-const rowData = ref({});
+const rowData = ref<EditUserData>({});
 
 // 编辑用户
-const handleEdit = (row: User) => {
+const handleEdit = (row) => {
   console.log("当前用户数据:", row);
   rowData.value = {
     id: row.id,
+    username: row.username,
     roles: row.roles,
+    department: row.department,
+    major: row.major,
+    title: row.title,
+    teacher_id: row.teacher_id,
   };
   console.log("rowData:", rowData.value);
   isEdit.value = true;
@@ -226,30 +291,34 @@ const handleEdit = (row: User) => {
   }, 100);
 };
 
+const handleDepartmentChange = (value: string) => {
+  console.log("学院变更为:", value);
+  // 更新专业选项
+  const majorField = options.value.list.find((item) => item.prop === "major");
+  if (majorField) {
+    majorField.options = getMajors(value);
+  }
+  // 清空已选专业
+  if (rowData.value) {
+    rowData.value.major = "";
+  }
+};
+
 // 更新数据
 const updateData = async (formData: any) => {
   try {
     console.log("提交的表单数据:", formData);
 
-    if (formData.roles === "teacher") {
-      // 更新用户角色和教师信息
-      await updateTeacherRoleReq({
-        id: formData.id,
-        roles: formData.roles,
-        department: formData.department || "",
-        major: formData.major || "",
-        title: formData.title || "",
-      });
-    } else {
-      // 仅更新用户角色
-      await updateTeacherRoleReq({
-        id: formData.id,
-        roles: formData.roles,
-        department: formData.department || "",
-        major: formData.major || "",
-        title: formData.title || "",
-      });
-    }
+    // 统一使用 updateTeacherRoleReq 进行更新
+    await updateTeacherRoleReq({
+      id: formData.id,
+      name: formData.username,
+      roles: formData.roles,
+      department: formData.department || "",
+      major: formData.major || "",
+      title: formData.title || "",
+      teacher_id: formData.teacher_id || "",
+    });
 
     ElMessage.success("更新成功");
     visible.value = false;
@@ -327,6 +396,12 @@ const handleDelete = async (row: User) => {
     }
   }
 };
+
+// 组件挂载前获取学院数据
+onBeforeMount(async () => {
+  await fetchCollegeData();
+  await getData();
+});
 </script>
 
 <style scoped></style>

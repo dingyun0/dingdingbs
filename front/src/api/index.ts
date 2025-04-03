@@ -111,6 +111,7 @@ export const updateTeacherRoleReq = (data: {
   department: string;
   major: string;
   title: string;
+  name: string;
 }) => {
   return request({
     url: "/users/updateTeacherRole",

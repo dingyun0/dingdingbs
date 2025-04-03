@@ -11,6 +11,7 @@
         :viewFunc="handleView"
         :delFunc="handleDelete"
         :page-change="changePage"
+        :editFunc="handleEdit"
       >
       </TableCustom>
     </div>

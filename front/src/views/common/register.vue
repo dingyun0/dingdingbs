@@ -69,7 +69,7 @@
               <el-icon><Calendar /></el-icon>
             </template>
             <el-option
-              v-for="grade in grades"
+              v-for="grade in availableGrades"
               :key="grade"
               :label="grade"
               :value="grade"
@@ -131,11 +131,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from "vue";
+import { ref, reactive, computed, watch, onBeforeMount } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, type FormInstance, type FormRules } from "element-plus";
 import { Register } from "@/types/user";
 import { registerReq } from "@/api";
+import { getCollegeList } from "@/api/college";
 
 const router = useRouter();
 const param = reactive<Register>({
@@ -149,38 +150,60 @@ const param = reactive<Register>({
   class_name: "",
 });
 
-// 定义学院和专业的映射关系
-const departments = [
-  {
-    label: "信息科学与技术学院",
-    value: "信息科学与技术学院",
-    majors: ["网络工程", "计算机", "电子", "物联网", "通信"],
-  },
-  {
-    label: "人文与社会科学学院",
-    value: "人文与社会科学学院",
-    majors: ["社工", "文管", "行管"],
-  },
-  {
-    label: "何香凝艺术设计学院",
-    value: "何香凝艺术设计学院",
-    majors: ["数媒", "视觉", "环境"],
-  },
-  {
-    label: "机电工程学院",
-    value: "机电工程学院",
-    majors: ["机电"],
-  },
-];
+// 存储从API获取的学院数据
+const collegeData = ref<any[]>([]);
 
-const grades = ["21级", "22级", "23级", "24级"];
+// 获取学院数据
+const fetchCollegeData = async () => {
+  try {
+    const res = await getCollegeList();
+    if (res.data) {
+      collegeData.value = res.data;
+    }
+  } catch (error) {
+    console.error("获取学院数据失败:", error);
+    ElMessage.error("获取学院数据失败");
+  }
+};
+
+// 处理学院数据为下拉选项格式
+const departments = computed(() => {
+  const deptMap = new Map();
+  collegeData.value.forEach((item) => {
+    if (!deptMap.has(item.department)) {
+      deptMap.set(item.department, {
+        label: item.department,
+        value: item.department,
+        majors: new Set(),
+      });
+    }
+    deptMap.get(item.department).majors.add(item.major);
+  });
+  return Array.from(deptMap.values()).map((dept) => ({
+    ...dept,
+    majors: Array.from(dept.majors),
+  }));
+});
 
 // 根据选择的学院计算可选的专业
 const availableMajors = computed(() => {
-  const selectedDept = departments.find(
+  const selectedDept = departments.value.find(
     (dept) => dept.value === param.department
   );
   return selectedDept ? selectedDept.majors : [];
+});
+
+// 获取可选的年级
+const availableGrades = computed(() => {
+  if (!param.department || !param.major) return [];
+  const grades = new Set();
+  collegeData.value
+    .filter(
+      (item) =>
+        item.department === param.department && item.major === param.major
+    )
+    .forEach((item) => grades.add(item.grade));
+  return Array.from(grades);
 });
 
 // 监听学院变化，重置专业选择
@@ -188,6 +211,15 @@ watch(
   () => param.department,
   () => {
     param.major = "";
+    param.grade = "";
+  }
+);
+
+// 监听专业变化，重置年级选择
+watch(
+  () => param.major,
+  () => {
+    param.grade = "";
   }
 );
 
@@ -207,14 +239,14 @@ const rules: FormRules = {
   grade: [{ required: true, message: "请选择年级", trigger: "change" }],
   class_name: [{ required: true, message: "请输入班级", trigger: "blur" }],
 };
+
 const register = ref<FormInstance>();
+
 const registerFunc = () => {
   registerReq(param)
     .then((res) => {
       console.log("注册响应:", res);
-
       if (res.data.code === 200) {
-        // 注意这里要用 res.data.code
         ElMessage.success(res.data.msg || "注册成功，请登录");
         router.push("/login");
       } else {
@@ -226,6 +258,7 @@ const registerFunc = () => {
       ElMessage.error("注册失败");
     });
 };
+
 const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.validate((valid: boolean) => {
@@ -236,16 +269,16 @@ const submitForm = (formEl: FormInstance | undefined) => {
       } else {
         registerFunc();
       }
-      router.push("/login");
     } else {
       return false;
     }
   });
 };
 
-function elMessage(arg0: string, arg1: string) {
-  throw new Error("Function not implemented.");
-}
+// 组件挂载前获取学院数据
+onBeforeMount(async () => {
+  await fetchCollegeData();
+});
 </script>
 
 <style scoped>

@@ -7,7 +7,7 @@ from typing import List
 router = APIRouter()
 
 @router.get('/get_college_list', summary="获取学院列表", response_model=List[CollegeInDB])
-async def get_college_list(current_user = DependsJwtUser):
+async def get_college_list():
     """获取学院列表"""
     result = await CollegeService.get_college_list()
     return result

@@ -19,4 +19,5 @@ export interface FormOptionList {
   activeText?: string;
   inactiveText?: string;
   required?: boolean;
+  change?: (value: any) => void; // 添加这一行
 }

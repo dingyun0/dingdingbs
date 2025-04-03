@@ -89,3 +89,4 @@ class UpdateTeacherRole(SchemaBase):
     department: str
     major: str
     title: str
+    name:str

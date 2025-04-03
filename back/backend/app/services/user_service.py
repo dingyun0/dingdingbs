@@ -836,6 +836,7 @@ class UserService:
                             teacher.department = teacher_data.get("department", "")
                             teacher.major = teacher_data.get("major", "")
                             teacher.title = teacher_data.get("title", "")
+                            teacher.name=teacher_data.get("name","")
                             await teacher.save(using_db=connection)
                             print(f"已更新用户ID为{user_id}的教师记录")
                         else:
@@ -845,6 +846,7 @@ class UserService:
                                 department=teacher_data.get("department", ""),
                                 major=teacher_data.get("major", ""),
                                 title=teacher_data.get("title", ""),
+                                name=teacher_data.get("name",""),
                                 using_db=connection
                             )
                             print(f"已创建用户ID为{user_id}的教师记录")
