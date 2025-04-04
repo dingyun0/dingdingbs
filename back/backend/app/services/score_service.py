@@ -86,3 +86,18 @@ class ScoreService:
         except Exception as e:
             print(f"获取成绩失败: {str(e)}")
             return {"code": 500, "message": f"获取成绩失败: {str(e)}"}
+        
+    @staticmethod
+    async def get_inputted_college():
+        """获取已录入成绩的学院信息"""
+        try:
+            colleges = await score_dao.get_inputted_college()
+            return {
+                "code": 200,
+                "message": "获取成功",
+                "data": colleges
+            }
+        except Exception as e:
+            logging.error(f"获取已录入成绩的学院信息失败: {str(e)}", exc_info=True)
+            return {"code": 500, "message": f"获取成绩失败: {str(e)}"}
+            

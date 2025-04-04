@@ -65,8 +65,32 @@ class ScoreDao(DaoBase):
             print(f"获取成绩失败: {str(e)}")
             raise
 
-
-
+    async def get_inputted_college(self):
+        """获取已录入成绩的学院信息"""
+        try:
+            # 获取所有成绩记录
+            scores = await self.model.all()
+            
+            # 使用集合来存储唯一的组合
+            unique_combinations = set()
+            result = []
+            
+            # 遍历所有成绩记录，提取唯一的学院-专业-年级组合
+            for score in scores:
+                if score.department and score.major and score.grade:
+                    combination = (score.department, score.major, score.grade)
+                    if combination not in unique_combinations:
+                        unique_combinations.add(combination)
+                        result.append({
+                            "department": score.department,
+                            "major": score.major,
+                            "grade": score.grade
+                        })
+            
+            return result
+        except Exception as e:
+            print(f"获取已录入成绩的学院信息失败: {str(e)}")
+            raise
 
 # 创建全局实例
 score_dao = ScoreDao()

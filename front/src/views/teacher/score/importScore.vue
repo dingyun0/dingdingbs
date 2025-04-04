@@ -34,6 +34,13 @@
         >
           保存成绩
         </el-button>
+        <el-button
+          type="info"
+          @click="showInputtedInfo"
+          style="margin-left: 10px"
+        >
+          查看当前已录入信息
+        </el-button>
       </div>
       <el-table
         :data="tableData"
@@ -67,10 +74,10 @@
             style="width: 100%"
           >
             <el-option
-              v-for="item in options.colleges"
-              :key="item"
-              :label="item"
-              :value="item"
+              v-for="dept in departments"
+              :key="dept.value"
+              :label="dept.label"
+              :value="dept.value"
             />
           </el-select>
         </el-form-item>
@@ -79,12 +86,13 @@
             v-model="filterForm.major"
             placeholder="请选择专业"
             style="width: 100%"
+            :disabled="!filterForm.department"
           >
             <el-option
-              v-for="item in options.majors"
-              :key="item"
-              :label="item"
-              :value="item"
+              v-for="major in availableMajors"
+              :key="major"
+              :label="major"
+              :value="major"
             />
           </el-select>
         </el-form-item>
@@ -95,10 +103,10 @@
             style="width: 100%"
           >
             <el-option
-              v-for="item in options.grades"
-              :key="item"
-              :label="item"
-              :value="item"
+              v-for="grade in options.grades"
+              :key="grade"
+              :label="grade"
+              :value="grade"
             />
           </el-select>
         </el-form-item>
@@ -111,6 +119,14 @@
           >
         </span>
       </template>
+    </el-dialog>
+
+    <el-dialog title="已录入成绩信息" v-model="inputtedInfoVisible" width="50%">
+      <el-table :data="inputtedColleges" border>
+        <el-table-column prop="department" label="学院" />
+        <el-table-column prop="major" label="专业" />
+        <el-table-column prop="grade" label="年级" />
+      </el-table>
     </el-dialog>
 
     <el-upload
@@ -129,30 +145,17 @@
 
 <script setup lang="ts" name="import">
 import { UploadProps, UploadInstance } from "element-plus";
-import { ref, reactive, onMounted, computed } from "vue";
+import { ref, reactive, onMounted, computed, onBeforeMount, watch } from "vue";
 import * as XLSX from "xlsx";
 import { saveScoreReq } from "@/api/score";
 import { ElMessage } from "element-plus";
 import { getSessionOptionsReq, getFilteredCoursesReq } from "@/api/session";
+import { getCollegeList } from "@/api/college";
+import { getInputtedCollege } from "@/api/score";
 import {
   SessionOptionsResponse,
   FilteredCoursesResponse,
 } from "@/types/session";
-
-// interface TableItem {
-//   id: number;
-//   name: string;
-//   sno: string;
-//   class_name: string;
-//   操作系统课程设计成绩: string;
-//   无线网络技术成绩: string;
-//   计算机网络课程设计: string;
-//   操作系统: string;
-//   人工智能与网络技术学科前沿: string;
-//   信息安全原理及应用: string;
-//   Linux操作系统: string;
-//   Java程序设计: string;
-// }
 
 const tableData = ref([]);
 const dialogVisible = ref(false);
@@ -172,7 +175,7 @@ const options = ref<{
 }>({
   colleges: [],
   majors: [],
-  grades: [],
+  grades: ["21级", "22级", "23级", "24级"],
 });
 
 // 动态列配置
@@ -180,26 +183,76 @@ const columns = ref([
   { prop: "id", label: "ID", width: "55", align: "center" },
   { prop: "sno", label: "学号" },
   { prop: "name", label: "姓名" },
-  { prop: "class_name", label: "班级" },
+  { prop: "department", label: "学院" },
+  { prop: "major", label: "专业" },
+  { prop: "grade", label: "年级" },
 ]);
 
-// 获取选项数据
-const getOptions = async () => {
-  try {
-    const res = await getSessionOptionsReq();
-    console.log("API返回数据:", res);
+// 存储从API获取的学院数据
+const collegeData = ref<any[]>([]);
 
-    if (res.code === 200) {
-      options.value = res.data;
-      console.log("选项数据:", options.value);
-    } else {
-      ElMessage.error(res.message || "获取选项失败");
+// 获取学院数据
+const fetchCollegeData = async () => {
+  try {
+    const res = await getCollegeList();
+    if (res.data) {
+      collegeData.value = res.data;
     }
   } catch (error) {
-    console.error("获取选项失败:", error);
-    ElMessage.error("获取选项失败");
+    console.error("获取学院数据失败:", error);
+    ElMessage.error("获取学院数据失败");
   }
 };
+
+// 处理学院数据为下拉选项格式
+const departments = computed(() => {
+  const deptMap = new Map();
+  collegeData.value.forEach((item) => {
+    if (!deptMap.has(item.department)) {
+      deptMap.set(item.department, {
+        label: item.department,
+        value: item.department,
+        majors: new Set(),
+      });
+    }
+    deptMap.get(item.department).majors.add(item.major);
+  });
+  return Array.from(deptMap.values()).map((dept) => ({
+    label: dept.label,
+    value: dept.value,
+    majors: Array.from(dept.majors),
+  }));
+});
+
+// 根据选择的学院计算可选的专业
+const availableMajors = computed(() => {
+  const selectedDept = departments.value.find(
+    (dept) => dept.value === filterForm.value.department
+  );
+  return selectedDept ? selectedDept.majors : [];
+});
+
+// 监听学院变化，重置专业选择
+watch(
+  () => filterForm.value.department,
+  () => {
+    filterForm.value.major = "";
+    filterForm.value.grade = "";
+  }
+);
+
+// 监听专业变化，重置年级选择
+watch(
+  () => filterForm.value.major,
+  () => {
+    filterForm.value.grade = "";
+  }
+);
+
+// 组件挂载前获取学院数据
+onBeforeMount(async () => {
+  await fetchCollegeData();
+});
 
 // 获取表格数据
 const getData = () => {
@@ -235,12 +288,18 @@ const handleMany = async () => {
       id: index + 1,
       name: item["姓名"],
       sno: String(item["学号"]),
-      class_name: item["班级"],
+      department: item["学院"],
+      major: item["专业"],
+      grade: item["年级"],
     };
 
     // 动态添加课程成绩
     columns.value.forEach((col) => {
-      if (!["id", "sno", "name", "class_name"].includes(col.prop)) {
+      if (
+        !["id", "sno", "name", "department", "major", "grade"].includes(
+          col.prop
+        )
+      ) {
         baseInfo[col.prop] = String(item[col.label] || "");
       }
     });
@@ -259,7 +318,6 @@ const checkButtonState = () => {
 
 // 在数据加载后调用
 onMounted(() => {
-  getOptions();
   checkButtonState();
 });
 
@@ -268,7 +326,7 @@ const hasSetBasicInfo = ref(false);
 
 // 修改显示对话框的处理函数
 const showImportDialog = async () => {
-  await getOptions();
+  await fetchCollegeData();
   dialogVisible.value = true;
 };
 
@@ -296,7 +354,9 @@ const handleConfirmBasicInfo = async () => {
         { prop: "id", label: "ID", width: "55", align: "center" },
         { prop: "sno", label: "学号" },
         { prop: "name", label: "姓名" },
-        { prop: "class_name", label: "班级" },
+        { prop: "department", label: "学院" },
+        { prop: "major", label: "专业" },
+        { prop: "grade", label: "年级" },
         ...res.data.data.map((course) => ({
           prop: course.course_id,
           label: course.course_name,
@@ -320,7 +380,12 @@ const handleSave = async () => {
   try {
     // 获取课程字段列表
     const courseFields = columns.value
-      .filter((col) => !["id", "sno", "name", "class_name"].includes(col.prop))
+      .filter(
+        (col) =>
+          !["id", "sno", "name", "department", "major", "grade"].includes(
+            col.prop
+          )
+      )
       .map((col) => col.label);
 
     const data = {
@@ -329,13 +394,18 @@ const handleSave = async () => {
         const scoreData = {
           name: item.name,
           sno: item.sno,
-          class_name: item.class_name,
+          department: item.department,
+          major: item.major,
+          grade: item.grade,
         };
 
         // 动态添加课程成绩
         columns.value
           .filter(
-            (col) => !["id", "sno", "name", "class_name"].includes(col.prop)
+            (col) =>
+              !["id", "sno", "name", "department", "major", "grade"].includes(
+                col.prop
+              )
           )
           .forEach((col) => {
             scoreData[col.label] = item[col.prop] || "";
@@ -374,10 +444,15 @@ const generateTemplate = () => {
     const headers = [
       "学号",
       "姓名",
-      "班级",
+      "学院",
+      "专业",
+      "年级",
       ...columns.value
         .filter(
-          (col) => !["id", "sno", "name", "class_name"].includes(col.prop)
+          (col) =>
+            !["id", "sno", "name", "department", "major", "grade"].includes(
+              col.prop
+            )
         )
         .map((col) => col.label),
     ];
@@ -406,6 +481,25 @@ const generateTemplate = () => {
   } catch (error) {
     console.error("生成模板失败:", error);
     ElMessage.error("生成模板失败");
+  }
+};
+
+// 添加已录入信息相关的状态和方法
+const inputtedInfoVisible = ref(false);
+const inputtedColleges = ref([]);
+
+const showInputtedInfo = async () => {
+  try {
+    const res = await getInputtedCollege();
+    if (res.data.code === 200) {
+      inputtedColleges.value = res.data.data;
+      inputtedInfoVisible.value = true;
+    } else {
+      ElMessage.error(res.data.message || "获取已录入信息失败");
+    }
+  } catch (error) {
+    console.error("获取已录入信息失败:", error);
+    ElMessage.error("获取已录入信息失败");
   }
 };
 </script>

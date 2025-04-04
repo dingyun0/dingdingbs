@@ -39,3 +39,10 @@ async def get_recorded_classes():
     """
     return await ScoreService.get_recorded_classes()
 
+@router.get('/inputted-college', summary="获取已录入成绩的学院信息")
+async def get_inputted_college():
+    """
+    获取已录入成绩的学院信息
+    """
+    return await ScoreService.get_inputted_college()
+

@@ -17,7 +17,7 @@ export const menuData: Menus[] = [
         id: "12",
         pid: "1",
         index: "/management-allUsers",
-        title: "用户管理",
+        title: "角色管理",
       },
       {
         id: "13",

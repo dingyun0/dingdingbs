@@ -23,3 +23,10 @@ export const getRecordedClassesReq = () => {
     method: "get",
   });
 };
+
+export const getInputtedCollege = () => {
+  return request({
+    url: "/scores/inputted-college",
+    method: "get",
+  });
+};

@@ -108,10 +108,11 @@ export const updateUserRoleReq = (data: { id: number; roles: string }) => {
 export const updateTeacherRoleReq = (data: {
   id: number;
   roles: string;
-  department: string;
-  major: string;
-  title: string;
-  name: string;
+  department?: string;
+  major?: string;
+  title?: string;
+  name?: string;
+  teacher_id?: string;
 }) => {
   return request({
     url: "/users/updateTeacherRole",

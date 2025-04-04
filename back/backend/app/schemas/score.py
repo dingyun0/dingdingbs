@@ -5,7 +5,9 @@ from backend.app.schemas.base import SchemaBase
 class ScoreBase(SchemaBase):
     name: str
     sno: str  
-    class_name: str
+    department: str
+    major: str
+    grade: str
     
     @classmethod
     def create_dynamic_model(cls, course_fields: List[str]):
@@ -21,7 +23,9 @@ class ScoreBase(SchemaBase):
         field_definitions = {
             "name": (str, ...),
             "sno": (str, ...),
-            "class_name": (str, ...),
+            "department": (str, ...),
+            "major": (str, ...),
+            "grade": (str, ...),
         }
         
         # 添加动态课程字段
@@ -44,4 +48,10 @@ class SaveScore(SchemaBase):
         """
         DynamicModel = ScoreBase.create_dynamic_model(self.course_fields)
         return [DynamicModel(**score) for score in self.scores]
+
+class InputtedCollege(SchemaBase):
+    """已录入成绩的学院信息"""
+    department: str
+    major: str
+    grade: str
     
