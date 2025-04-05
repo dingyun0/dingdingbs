@@ -53,3 +53,11 @@ export const submitScoreReviewResult = (data: any) => {
     data: data,
   });
 };
+
+export const getScoreReviewResult = (student_sno: any) => {
+  return request({
+    url: "/scores/get_score_review_result",
+    method: "get",
+    params: { student_sno },
+  });
+};

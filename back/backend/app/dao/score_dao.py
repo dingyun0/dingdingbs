@@ -2,11 +2,12 @@ from typing import List
 from tortoise.transactions import atomic
 import json
 import logging
+from datetime import datetime
 
 from backend.app.dao.base import DaoBase
 from backend.app.models.score import Score
 from backend.app.models.score_review import ReviewScore
-from backend.app.schemas.score import ScoreBase, ScoreReview
+from backend.app.schemas.score import ScoreBase, ScoreReview, ScoreReviewResult
 
 
 class ScoreDao(DaoBase):
@@ -134,6 +135,71 @@ class ScoreDao(DaoBase):
             logging.error(f"获取成绩疑问申请列表失败: {str(e)}", exc_info=True)
             raise
 
+    @atomic()
+    async def save_score_review_result(self, data: ScoreReviewResult) -> bool:
+        """保存成绩疑问审核结果"""
+        try:
+            # 获取当前时间作为审核时间
+            current_time = datetime.now()
+            
+            # 更新审核状态和意见
+            update_data = {
+                "status": data.status,
+                "review_comment": data.comment,
+                "review_time": current_time
+            }
+            
+            # 更新成绩疑问记录
+            await ReviewScore.filter(id=data.review_id).update(**update_data)
+            
+            # 如果审核通过，这里可以添加其他逻辑，比如更新相关成绩等
+            if data.status == "approved":
+                # 获取成绩疑问记录
+                review = await ReviewScore.get(id=data.review_id)
+                if review:
+                    # TODO: 根据需要添加成绩更新逻辑
+                    pass
+            
+            return True
+        except Exception as e:
+            logging.error(f"保存成绩疑问审核结果失败: {str(e)}", exc_info=True)
+            return False
 
+    async def get_review_by_id(self, review_id: int):
+        """获取单个成绩疑问记录"""
+        try:
+            review = await ReviewScore.get_or_none(id=review_id)
+            return review
+        except Exception as e:
+            logging.error(f"获取成绩疑问记录失败: {str(e)}", exc_info=True)
+            raise
+        
+    async def get_score_review_result(self, student_sno: str):
+        """获取成绩疑问审核结果"""
+        try:
+            # 获取学生的所有成绩疑问记录，按申请时间倒序排序
+            results = await ReviewScore.filter(student_sno=student_sno).order_by('-apply_time')
+            
+            # 转换为列表格式
+            review_list = []
+            for result in results:
+                review_dict = {
+                    "id": result.id,
+                    "student_sno": result.student_sno,
+                    "student_name": result.student_name,
+                    "question_type": result.question_type,
+                    "content": result.content,
+                    "status": result.status,
+                    "apply_time": str(result.apply_time),
+                    "review_time": str(result.review_time) if result.review_time else None,
+                    "review_comment": result.review_comment
+                }
+                review_list.append(review_dict)
+            
+            return review_list
+        except Exception as e:
+            logging.error(f"获取成绩疑问审核结果失败: {str(e)}", exc_info=True)
+            raise
+        
 # 创建全局实例
 score_dao = ScoreDao()

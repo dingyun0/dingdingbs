@@ -233,10 +233,7 @@ const getStatusType = (status: string) => {
 const getReviewList = async () => {
   loading.value = true;
   try {
-    const { data: response } = await getScoreReviewList({
-      page: currentPage.value,
-      page_size: pageSize.value,
-    });
+    const { data: response } = await getScoreReviewList();
 
     if (response.code === 200 && response.data) {
       reviewList.value = response.data.list;

@@ -68,3 +68,8 @@ class ScoreReview(SchemaBase):
     review_time: str | None = Field(default=None, description="审核时间")
     review_comment: str | None = Field(default=None, description="审核意见")
     
+class ScoreReviewResult(BaseModel):
+    """成绩疑问审核结果"""
+    review_id: int = Field(..., description="成绩疑问ID")
+    status: str = Field(..., description="审核状态：approved-通过，rejected-驳回")
+    comment: str = Field(..., description="审核意见")

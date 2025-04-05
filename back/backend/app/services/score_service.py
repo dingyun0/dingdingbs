@@ -1,7 +1,7 @@
 from backend.app.models.score import Score
 from backend.app.dao.score_dao import score_dao
 from backend.app.dao.session_dao import session_dao
-from backend.app.schemas.score import SaveScore, ScoreReview
+from backend.app.schemas.score import SaveScore, ScoreReview, ScoreReviewResult
 from backend.app.common.exception.errors import CustomError
 import logging
 import json
@@ -158,6 +158,96 @@ class ScoreService:
             }
         except Exception as e:
             logging.error(f"获取成绩疑问申请列表失败: {str(e)}", exc_info=True)
+            return {
+                "code": 500,
+                "message": f"获取失败: {str(e)}",
+                "data": None
+            }
+    
+    @staticmethod
+    async def submit_score_review_result(data: ScoreReviewResult):
+        """提交成绩疑问审核结果"""
+        try:
+            # 检查成绩疑问记录是否存在
+            review = await score_dao.get_review_by_id(data.review_id)
+            if not review:
+                return {
+                    "code": 400,
+                    "message": "成绩疑问记录不存在",
+                    "data": None
+                }
+            
+            # 检查状态是否为待审核
+            if review.status != "pending":
+                return {
+                    "code": 400,
+                    "message": "该记录已审核，不能重复审核",
+                    "data": None
+                }
+            
+            # 保存审核结果
+            success = await score_dao.save_score_review_result(data)
+            if not success:
+                return {
+                    "code": 500,
+                    "message": "审核失败",
+                    "data": None
+                }
+            
+            # 获取更新后的记录
+            updated_review = await score_dao.get_review_by_id(data.review_id)
+            if not updated_review:
+                return {
+                    "code": 500,
+                    "message": "获取更新后的记录失败",
+                    "data": None
+                }
+            
+            # 转换为字典格式
+            review_dict = {
+                "id": updated_review.id,
+                "student_sno": updated_review.student_sno,
+                "student_name": updated_review.student_name,
+                "question_type": updated_review.question_type,
+                "content": updated_review.content,
+                "status": updated_review.status,
+                "apply_time": str(updated_review.apply_time),
+                "review_time": str(updated_review.review_time) if updated_review.review_time else None,
+                "review_comment": updated_review.review_comment
+            }
+            
+            return {
+                "code": 200,
+                "message": "审核成功",
+                "data": review_dict
+            }
+        except Exception as e:
+            logging.error(f"提交成绩疑问审核结果失败: {str(e)}", exc_info=True)
+            return {
+                "code": 500,
+                "message": f"审核失败: {str(e)}",
+                "data": None
+            }
+        
+    @staticmethod
+    async def get_score_review_result(student_sno: str):
+        """获取成绩疑问审核结果"""
+        try:
+            results = await score_dao.get_score_review_result(student_sno)
+            if not results:
+                return {
+                    "code": 200,
+                    "message": "暂无成绩疑问记录",
+                    "data": []
+                }
+            
+            return {
+                "code": 200,
+                "message": "获取成功",
+                "data": results
+            }
+        except Exception as e:
+            logging.error(f"获取成绩疑问审核结果失败: {str(e)}", exc_info=True)
             return {
                 "code": 500,
                 "message": f"获取失败: {str(e)}",
