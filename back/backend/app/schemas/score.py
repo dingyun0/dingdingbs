@@ -1,6 +1,7 @@
 from typing import List, Dict, Any
 from pydantic import BaseModel, Field, create_model
 from backend.app.schemas.base import SchemaBase
+from datetime import datetime
 
 class ScoreBase(SchemaBase):
     name: str
@@ -54,4 +55,16 @@ class InputtedCollege(SchemaBase):
     department: str
     major: str
     grade: str
+
+class ScoreReview(SchemaBase):
+    """成绩疑问申请"""
+    student_sno: str = Field(..., description="学生学号")
+    student_name: str = Field(..., description="学生姓名")
+    teacher_id: int = Field(..., description="审核老师ID")
+    question_type: str = Field(..., description="疑问类型")
+    content: str = Field(..., description="疑问说明")
+    status: str = Field(default="pending", description="审核状态")
+    apply_time: str = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"), description="申请时间")
+    review_time: str | None = Field(default=None, description="审核时间")
+    review_comment: str | None = Field(default=None, description="审核意见")
     

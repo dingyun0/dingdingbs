@@ -247,6 +247,12 @@ export const menuData: Menus[] = [
         index: "/activity/reviewActivity",
         title: "审核学生活动申请",
       },
+      {
+        id: "162",
+        pid: "Calendar",
+        index: "/activity/reviewScore",
+        title: "审核学生成绩疑惑",
+      },
     ],
   },
   {
@@ -274,6 +280,12 @@ export const menuData: Menus[] = [
         pid: "8",
         index: "/showComprehensive",
         title: "查看综测成绩",
+      },
+      {
+        id: "82",
+        pid: "8",
+        index: "/reviewResult",
+        title: "查看综测审核结果",
       },
     ],
   },

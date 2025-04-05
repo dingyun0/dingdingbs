@@ -125,58 +125,6 @@ const getTableData = async () => {
   }
 };
 
-// 添加公告
-const handleAdd = () => {
-  rowData.value = {};
-  isEdit.value = false;
-  visible.value = true;
-};
-// 编辑公告
-const handleEdit = (row: any) => {
-  rowData.value = { ...row };
-  isEdit.value = true;
-  visible.value = true;
-};
-
-// 删除公告
-const handleDelete = async (row: any) => {
-  try {
-    await ElMessageBox.confirm("确认删除该公告?", "提示", {
-      type: "warning",
-    });
-    await deleteAnnouncementReq(row.id);
-    ElMessage.success("删除成功");
-    // 重新获取数据
-    await getTableData();
-  } catch (error) {
-    console.error("删除失败:", error);
-  }
-};
-
-// 更新数据
-const updateData = async (formData: any) => {
-  try {
-    if (isEdit.value) {
-      await updateAnnouncementReq(formData);
-      ElMessage.success("更新成功");
-    } else {
-      await addAnnouncementReq(formData);
-      ElMessage.success("添加成功");
-    }
-    closeDialog();
-    // 重新获取数据
-    await getTableData();
-  } catch (error) {
-    console.error("操作失败:", error);
-  }
-};
-
-// 关闭对话框
-const closeDialog = () => {
-  visible.value = false;
-  rowData.value = {};
-};
-
 // 页码变化处理
 const handlePageChange = async (page: number) => {
   console.log("222", page);

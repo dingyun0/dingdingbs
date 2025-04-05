@@ -140,6 +140,8 @@ const showReviewDetail = (row: ReviewItem) => {
 const getReviewList = async () => {
   try {
     loading.value = true;
+    console.log("1111111111111111111", userStore);
+
     const res = await getReviewMessage(userStore.sno);
     if (res.data.code === 200) {
       reviewList.value = res.data.data;

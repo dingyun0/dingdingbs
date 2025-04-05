@@ -1,10 +1,12 @@
 from typing import List
 from tortoise.transactions import atomic
 import json
+import logging
 
 from backend.app.dao.base import DaoBase
 from backend.app.models.score import Score
-from backend.app.schemas.score import ScoreBase
+from backend.app.models.score_review import ReviewScore
+from backend.app.schemas.score import ScoreBase, ScoreReview
 
 
 class ScoreDao(DaoBase):
@@ -91,6 +93,26 @@ class ScoreDao(DaoBase):
         except Exception as e:
             print(f"获取已录入成绩的学院信息失败: {str(e)}")
             raise
+
+    @atomic()
+    async def save_score_review(self, data: ScoreReview) -> bool:
+        """保存成绩疑问申请"""
+        try:
+            review_data = {
+                "student_sno": data.student_sno,
+                "student_name": data.student_name,
+                "teacher_id": data.teacher_id,
+                "question_type": data.question_type,
+                "content": data.content,
+                "status": data.status,
+                "apply_time": data.apply_time,
+                "review_time": data.review_time
+            }
+            await ReviewScore.create(**review_data)
+            return True
+        except Exception as e:
+            logging.error(f"保存成绩疑问申请失败: {str(e)}", exc_info=True)
+            return False
 
 # 创建全局实例
 score_dao = ScoreDao()

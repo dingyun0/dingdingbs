@@ -30,3 +30,11 @@ export const getInputtedCollege = () => {
     method: "get",
   });
 };
+
+export const getScoreReviewReq = (data: any) => {
+  return request({
+    url: "/scores/review_score",
+    method: "post",
+    data: data,
+  });
+};

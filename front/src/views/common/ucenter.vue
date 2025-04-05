@@ -1,270 +1,293 @@
 <template>
-    <div>
-        <div class="user-container">
-            <el-card class="user-profile" shadow="hover" :body-style="{ padding: '0px' }">
-                <div class="user-profile-bg"></div>
-                <div class="user-avatar-wrap">
-                    <el-avatar class="user-avatar" :size="120" :src="avatarImg" />
-                </div>
-                <div class="user-info">
-                    <div class="info-name">{{ name }}</div>
-                    <div class="info-desc">
-                        <span>@lin-xin</span>
-                        <el-divider direction="vertical" />
-                        <el-link href="https://lin-xin.gitee.io" target="_blank">lin-xin.gitee.io</el-link>
-                    </div>
-                    <div class="info-desc">FE Developer</div>
-                    <div class="info-icon">
-                        <a href="https://github.com/lin-xin" target="_blank"> <i class="el-icon-lx-github-fill"></i></a>
-                        <i class="el-icon-lx-qq-fill"></i>
-                        <i class="el-icon-lx-facebook-fill"></i>
-                        <i class="el-icon-lx-twitter-fill"></i>
-                    </div>
-                </div>
-                <div class="user-footer">
-                    <div class="user-footer-item">
-                        <el-statistic title="Follower" :value="1800" />
-                    </div>
-                    <div class="user-footer-item">
-                        <el-statistic title="Following" :value="666" />
-                    </div>
-                    <div class="user-footer-item">
-                        <el-statistic title="Total Post" :value="888" />
-                    </div>
-                </div>
-            </el-card>
-            <el-card
-                class="user-content"
-                shadow="hover"
-                :body-style="{ padding: '20px 50px', height: '100%', boxSizing: 'border-box' }"
-            >
-                <el-tabs tab-position="left" v-model="activeName">
-                    <el-tab-pane name="label1" label="消息通知" class="user-tabpane">
-                        <TabsComp />
-                    </el-tab-pane>
-                    <el-tab-pane name="label2" label="我的头像" class="user-tabpane">
-                        <div class="crop-wrap" v-if="activeName === 'label2'">
-                            <vueCropper
-                                ref="cropper"
-                                :img="imgSrc"
-                                :autoCrop="true"
-                                :centerBox="true"
-                                :full="true"
-                                mode="contain"
-                            >
-                            </vueCropper>
-                        </div>
-                        <el-button class="crop-demo-btn" type="primary"
-                            >选择图片
-                            <input class="crop-input" type="file" name="image" accept="image/*" @change="setImage" />
-                        </el-button>
-                        <el-button type="success" @click="saveAvatar">上传并保存</el-button>
-                    </el-tab-pane>
-                    <el-tab-pane name="label3" label="修改密码" class="user-tabpane">
-                        <el-form class="w500" label-position="top">
-                            <el-form-item label="旧密码：">
-                                <el-input type="password" v-model="form.old"></el-input>
-                            </el-form-item>
-                            <el-form-item label="新密码：">
-                                <el-input type="password" v-model="form.new"></el-input>
-                            </el-form-item>
-                            <el-form-item label="确认新密码：">
-                                <el-input type="password" v-model="form.new1"></el-input>
-                            </el-form-item>
-                            <el-form-item>
-                                <el-button type="primary" @click="onSubmit">保存</el-button>
-                            </el-form-item>
-                        </el-form>
-                    </el-tab-pane>
-                    <el-tab-pane name="label4" label="赞赏作者" class="user-tabpane">
-                        <div class="plugins-tips">
-                            如果该框架
-                            <el-link href="https://github.com/lin-xin/vue-manage-system" target="_blank"
-                                >vue-manage-system</el-link
-                            >
-                            对你有帮助，那就请作者喝杯饮料吧！<el-icon>
-                                <ColdDrink />
-                            </el-icon>
-                            加微信号 linxin_20 探讨问题。
-                        </div>
-                        <div>
-                            <img src="https://lin-xin.gitee.io/images/weixin.jpg" />
-                        </div>
-                    </el-tab-pane>
-                </el-tabs>
-            </el-card>
-        </div>
+  <div class="container">
+    <div class="container-box">
+      <el-card class="user-card">
+        <el-tabs tab-position="left" v-model="activeName">
+          <el-tab-pane name="label2" label="我的头像" class="user-tabpane">
+            <div class="crop-wrap" v-if="activeName === 'label2'">
+              <vueCropper
+                ref="cropper"
+                :img="imgSrc"
+                :autoCrop="true"
+                :centerBox="true"
+                :full="true"
+                :fixedBox="true"
+                :canScale="true"
+                :autoCropWidth="200"
+                :autoCropHeight="200"
+                mode="contain"
+              >
+              </vueCropper>
+            </div>
+            <div class="button-group">
+              <el-button class="crop-demo-btn" type="primary">
+                选择图片
+                <input
+                  class="crop-input"
+                  type="file"
+                  name="image"
+                  accept="image/*"
+                  @change="setImage"
+                />
+              </el-button>
+              <el-button type="success" @click="saveAvatar" :loading="uploading"
+                >上传并保存</el-button
+              >
+            </div>
+            <div class="tips">
+              <p>支持 jpg、png 格式，文件小于 2M</p>
+              <p>建议尺寸 200x200 像素</p>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane name="label3" label="修改密码" class="user-tabpane">
+            <el-form class="w500" label-position="top">
+              <el-form-item label="旧密码：">
+                <el-input type="password" v-model="form.old"></el-input>
+              </el-form-item>
+              <el-form-item label="新密码：">
+                <el-input type="password" v-model="form.new"></el-input>
+              </el-form-item>
+              <el-form-item label="确认新密码：">
+                <el-input type="password" v-model="form.new1"></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="onSubmit">保存</el-button>
+              </el-form-item>
+            </el-form>
+          </el-tab-pane>
+        </el-tabs>
+      </el-card>
     </div>
+  </div>
 </template>
 
 <script setup lang="ts" name="ucenter">
-import { reactive, ref } from 'vue';
-import { VueCropper } from 'vue-cropper';
-import 'vue-cropper/dist/index.css';
-import avatar from '@/assets/img/img.jpg';
-import TabsComp from '../element/tabs.vue';
+import { reactive, ref, onMounted } from "vue";
+import { VueCropper } from "vue-cropper";
+import "vue-cropper/dist/index.css";
+import avatar from "@/assets/img/img.jpg";
+import TabsComp from "../element/tabs.vue";
+import { ElMessage } from "element-plus";
+import { useUserStore } from "@/store/user";
 
-const name = localStorage.getItem('vuems_name');
+const userStore = useUserStore();
+const name = localStorage.getItem("vuems_name");
 const form = reactive({
-    new1: '',
-    new: '',
-    old: '',
+  new1: "",
+  new: "",
+  old: "",
 });
-const onSubmit = () => {};
+const onSubmit = async () => {
+  if (form.new !== form.new1) {
+    ElMessage.error("两次输入的新密码不一致");
+    return;
+  }
+  if (form.old === form.new) {
+    ElMessage.error("新密码不能与旧密码相同");
+    return;
+  }
+  try {
+    const res = await fetch("/api/users/password/reset", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        old: form.old,
+        new: form.new,
+      }),
+    }).then((res) => res.json());
 
-const activeName = ref('label1');
+    if (res.code === 200) {
+      ElMessage.success("密码修改成功");
+      // 清空表单
+      form.old = "";
+      form.new = "";
+      form.new1 = "";
+    } else {
+      ElMessage.error(res.message || "密码修改失败");
+    }
+  } catch (error) {
+    console.error("密码修改失败:", error);
+    ElMessage.error("密码修改失败，请重试");
+  }
+};
+
+const activeName = ref("label2");
 
 const avatarImg = ref(avatar);
 const imgSrc = ref(avatar);
-const cropImg = ref('');
+const cropImg = ref("");
 const cropper: any = ref();
+const uploading = ref(false);
 
 const setImage = (e: any) => {
-    const file = e.target.files[0];
-    if (!file.type.includes('image/')) {
-        return;
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // 验证文件类型
+  const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
+  if (!isJpgOrPng) {
+    ElMessage.error("只能上传 JPG/PNG 格式的图片！");
+    return;
+  }
+
+  // 验证文件大小
+  const isLt2M = file.size / 1024 / 1024 < 2;
+  if (!isLt2M) {
+    ElMessage.error("图片大小不能超过 2MB！");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e: ProgressEvent<FileReader>) => {
+    if (e.target?.result) {
+      imgSrc.value = e.target.result as string;
     }
-    const reader = new FileReader();
-    reader.onload = (event: any) => {
-        imgSrc.value = event.target.result;
-        cropper.value && cropper.value.replace(event.target.result);
-    };
-    reader.readAsDataURL(file);
+  };
+  reader.readAsDataURL(file);
 };
 
 const cropImage = () => {
-    cropImg.value = cropper.value?.getCroppedCanvas().toDataURL();
+  cropImg.value = cropper.value?.getCroppedCanvas().toDataURL();
 };
 
-const saveAvatar = () => {
-    avatarImg.value = cropImg.value;
+const saveAvatar = async () => {
+  if (!cropper.value) {
+    ElMessage.warning("请先选择图片");
+    return;
+  }
+
+  try {
+    uploading.value = true;
+    // 获取裁剪后的图片数据
+    const canvas = await cropper.value.getCropData();
+
+    // 将 base64 转换为 Blob
+    const base64Data = canvas.split(",")[1];
+    const blob = await fetch(`data:image/png;base64,${base64Data}`).then(
+      (res) => res.blob()
+    );
+
+    // 创建 FormData
+    const formData = new FormData();
+    formData.append("avatar", blob, "avatar.png");
+
+    // 调用上传接口
+    const response = await fetch("/api/user/upload-avatar", {
+      method: "POST",
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }).then((res) => res.json());
+
+    if (response.code === 200) {
+      ElMessage.success("头像上传成功");
+      // 更新头像显示
+      imgSrc.value = response.data.url;
+      avatarImg.value = response.data.url;
+    } else {
+      ElMessage.error(response.message || "上传失败");
+    }
+  } catch (error) {
+    console.error("头像上传失败:", error);
+    ElMessage.error("头像上传失败，请重试");
+  } finally {
+    uploading.value = false;
+  }
 };
+
+onMounted(() => {
+  // 如果用户已有头像，使用当前头像
+  const currentAvatar = avatarImg.value;
+  if (currentAvatar && currentAvatar !== avatar) {
+    imgSrc.value = currentAvatar;
+  }
+});
 </script>
 
 <style scoped>
-.user-container {
-    display: flex;
+.container {
+  padding: 20px;
 }
 
-.user-profile {
-    position: relative;
+.container-box {
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-.user-profile-bg {
-    width: 100%;
-    height: 200px;
-    background-image: url('../../assets/img/ucenter-bg.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
-.user-profile {
-    width: 500px;
-    margin-right: 20px;
-    flex: 0 0 auto;
-    align-self: flex-start;
-}
-
-.user-avatar-wrap {
-    position: absolute;
-    top: 135px;
-    width: 100%;
-    text-align: center;
-}
-
-.user-avatar {
-    border: 5px solid #fff;
-    border-radius: 50%;
-    overflow: hidden;
-    box-shadow: 0 7px 12px 0 rgba(62, 57, 107, 0.16);
-}
-
-.user-info {
-    text-align: center;
-    padding: 80px 0 30px;
-}
-
-.info-name {
-    margin: 0 0 20px;
-    font-size: 22px;
-    font-weight: 500;
-    color: #373a3c;
-}
-
-.info-desc {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 5px;
-}
-
-.info-desc,
-.info-desc a {
-    font-size: 18px;
-    color: #55595c;
-}
-
-.info-icon {
-    margin-top: 10px;
-}
-
-.info-icon i {
-    font-size: 30px;
-    margin: 0 10px;
-    color: #343434;
-}
-
-.user-content {
-    flex: 1;
+.user-card {
+  min-height: 500px;
 }
 
 .user-tabpane {
-    padding: 10px 20px;
+  padding: 20px;
 }
 
 .crop-wrap {
-    width: 600px;
-    height: 350px;
-    margin-bottom: 20px;
+  width: 100%;
+  height: 400px;
+  margin-bottom: 20px;
+  background-color: #f5f7fa;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+}
+
+.button-group {
+  margin: 20px 0;
 }
 
 .crop-demo-btn {
-    position: relative;
+  position: relative;
+  margin-right: 10px;
 }
 
 .crop-input {
-    position: absolute;
-    width: 100px;
-    height: 40px;
-    left: 0;
-    top: 0;
-    opacity: 0;
-    cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.tips {
+  color: #909399;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tips p {
+  margin: 5px 0;
 }
 
 .w500 {
-    width: 500px;
+  width: 500px;
 }
 
 .user-footer {
-    display: flex;
-    border-top: 1px solid rgba(83, 70, 134, 0.1);
+  display: flex;
+  border-top: 1px solid rgba(83, 70, 134, 0.1);
 }
 
 .user-footer-item {
-    padding: 20px 0;
-    width: 33.3333333333%;
-    text-align: center;
+  padding: 20px 0;
+  width: 33.3333333333%;
+  text-align: center;
 }
 
 .user-footer > div + div {
-    border-left: 1px solid rgba(83, 70, 134, 0.1);
+  border-left: 1px solid rgba(83, 70, 134, 0.1);
 }
 </style>
 
 <style>
 .el-tabs.el-tabs--left {
-    height: 100%;
+  height: 100%;
 }
 </style>

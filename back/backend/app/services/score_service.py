@@ -1,7 +1,7 @@
 from backend.app.models.score import Score
 from backend.app.dao.score_dao import score_dao
 from backend.app.dao.session_dao import session_dao
-from backend.app.schemas.score import SaveScore
+from backend.app.schemas.score import SaveScore, ScoreReview
 from backend.app.common.exception.errors import CustomError
 import logging
 import json
@@ -68,7 +68,9 @@ class ScoreService:
                 score_dict = {
                     "sno": score.sno,
                     "name": score.name,
-                    "class_name": score.class_name
+                    "department":score.department,
+                    "major":score.major,
+                    "grade":score.grade
                 }
                 
                 # 动态添加课程成绩
@@ -100,4 +102,24 @@ class ScoreService:
         except Exception as e:
             logging.error(f"获取已录入成绩的学院信息失败: {str(e)}", exc_info=True)
             return {"code": 500, "message": f"获取成绩失败: {str(e)}"}
-            
+    
+    @staticmethod
+    async def submit_score_review(data: ScoreReview):
+        """提交成绩疑问申请"""
+        try:
+            success = await score_dao.save_score_review(data)
+            print("提交成绩疑问申请成功:", success)
+            if success:
+                return {
+                    "code": 200,
+                    "message": "提交成功",
+                    "data": data.model_dump()
+                }
+            return {
+                "code": 500,
+                "message": "提交失败",
+                "data": None
+            }
+        except Exception as e:
+            logging.error(f"提交成绩疑问申请失败: {str(e)}", exc_info=True)
+            return {"code": 500, "message": f"提交失败: {str(e)}"}

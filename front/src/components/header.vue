@@ -3,7 +3,7 @@
     <!-- 折叠按钮 -->
     <div class="header-left">
       <img class="logo" src="../assets/img/logo.svg" alt="" />
-      <div class="web-title">后台管理系统</div>
+      <div class="web-title">智评奖学金管理系统</div>
       <div class="collapse-btn" @click="collapseChage">
         <el-icon v-if="sidebar.collapse">
           <Expand />
@@ -38,7 +38,6 @@
           </span>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="user">个人中心</el-dropdown-item>
               <el-dropdown-item divided command="loginout"
                 >退出登录</el-dropdown-item
               >

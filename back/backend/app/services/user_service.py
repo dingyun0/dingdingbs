@@ -30,7 +30,7 @@ from backend.app.utils.send_email import send_verification_code_email
 from backend.app.dao.crud_dao import UserDao
 from backend.app.common.exception.errors import CustomError
 from tortoise.transactions import in_transaction
-
+from backend.app.common import jwt
 
 class UserService:
     @staticmethod
@@ -859,4 +859,46 @@ class UserService:
         except Exception as e:
             print("更新用户角色错误:", str(e))
             raise errors.CustomError(f"更新用户角色失败: {str(e)}")
+
+    @staticmethod
+    async def update_avatar(user_id: int, avatar_url: str):
+        """
+        更新用户头像
+        """
+        try:
+            user = await User.get(id=user_id)
+            if not user:
+                raise ValueError("用户不存在")
+            
+            # 更新头像URL
+            user.avatar = avatar_url
+            await user.save()
+            
+            return True
+        except Exception as e:
+            raise Exception(f"更新头像失败: {str(e)}")
+
+    @staticmethod
+    async def reset_password(user_id: int, old_password: str, new_password: str) -> None:
+        """
+        重置用户密码
+        :param user_id: 用户ID
+        :param old_password: 旧密码
+        :param new_password: 新密码
+        :raises ValueError: 当旧密码验证失败时
+        """
+        # 获取用户信息
+        user = await UserDao.get_by_id(user_id)
+        if not user:
+            raise ValueError("用户不存在")
+        
+        # 验证旧密码
+        if not jwt.password_verify(old_password, user.password):
+            raise ValueError("旧密码不正确")
+        
+        # 生成新密码的哈希值
+        hashed_password = jwt.get_hash_password(new_password)
+        
+        # 更新密码
+        await UserDao.update_password(user_id, hashed_password)
                         

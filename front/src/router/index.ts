@@ -193,14 +193,27 @@ const routes: RouteRecordRaw[] = [
         path: "/showComprehensive",
         name: "showComprehensive",
         meta: {
-          title: "查看学业分",
-          permiss: "8",
+          title: "查看综测分",
+          permiss: "81",
         },
         component: () =>
           import(
-            /* webpackChunkName: "theme" */ "../views/student/showComprehensive.vue"
+            /* webpackChunkName: "theme" */ "../views/student/comprehensive/showComprehensive.vue"
           ),
       },
+      {
+        path: "/reviewResult",
+        name: "reviewResult",
+        meta: {
+          title: "查看综测审核结果",
+          permiss: "82",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "theme" */ "../views/student/comprehensive/reviewResult.vue"
+          ),
+      },
+
       {
         path: "/showAnnouncement/school",
         name: "showSchoolAnnouncement",
@@ -283,6 +296,18 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import(
             /* webpackChunkName: "theme" */ "../views/teacher/activity/reviewActivity.vue"
+          ),
+      },
+      {
+        path: "/activity/reviewScore",
+        name: "reviewScore",
+        meta: {
+          title: "审核学生成绩疑惑",
+          permiss: "162",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "theme" */ "../views/teacher/activity/reviewScore.vue"
           ),
       },
       {

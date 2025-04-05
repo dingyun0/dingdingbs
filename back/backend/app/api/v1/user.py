@@ -2,6 +2,12 @@
 # -*- coding: utf-8 -*-
 from fastapi import APIRouter, Depends, Request, Response, UploadFile
 # from backend.app.models.user import User
+from fastapi import APIRouter, Depends, UploadFile, File
+from backend.app.   services.user_service import UserService
+from backend.app.models.user import User
+import os
+import aiofiles
+import uuid
 
 
 from backend.app.models.user import User
@@ -12,6 +18,8 @@ from backend.app.schemas.user import CreateUser,UserInfo,Auth,GetUserInfo, Reset
 from backend.app.services.user_service import UserService
 from backend.app.common.exception.errors import CustomError
 from backend.app.models.teacher import Teacher
+from typing import Dict
+from backend.app.schemas.user import PasswordResetRequest
 
 router = APIRouter()
 
@@ -86,8 +94,8 @@ async def get_user_routes(current_user: User = Depends(get_current_user)):
             'admin': [
                 "0", "1", "12", "13","14", "5","51","52","53","7","13","131","151","171"
             ],
-            'teacher': ["0","3","31","32","33","34","7","16","161","151"],
-            'student': ["0", "8","81","7","9","91","92","11",'111',"112","151"]        }
+            'teacher': ["0","3","31","32","33","34","7","16","161","162","151"],
+            'student': ["0", "8","81","82","7","9","91","92","11",'111',"112","151"]        }
         
         # 获取用户角色
         user_role = current_user.roles  # 假设用户模型中有role字段
@@ -220,6 +228,71 @@ async def delete_user(user_id: int):
         return await response_base.fail(msg=f"删除失败: {str(e)}")
 
 
+@router.post("/upload-avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    上传用户头像
+    """
+    try:
+        # 检查文件类型
+        if not file.content_type in ["image/jpeg", "image/png"]:
+            return {"code": 400, "message": "只支持 JPG/PNG 格式的图片"}
+
+        # 读取文件内容
+        content = await file.read()
+        
+        # 检查文件大小（限制为2MB）
+        if len(content) > 2 * 1024 * 1024:
+            return {"code": 400, "message": "文件大小不能超过2MB"}
+
+        # 生成文件名
+        file_extension = os.path.splitext(file.filename)[1]
+        filename = f"{uuid.uuid4()}{file_extension}"
+        
+        # 确保上传目录存在
+        upload_dir = "static/avatars"
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # 保存文件
+        file_path = os.path.join(upload_dir, filename)
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(content)
+            
+        # 更新用户头像信息
+        avatar_url = f"/static/avatars/{filename}"
+        await UserService.update_avatar(current_user.id, avatar_url)
+        
+        return {
+            "code": 200,
+            "message": "头像上传成功",
+            "data": {
+                "url": avatar_url
+            }
+        }
+    except Exception as e:
+        return {"code": 500, "message": f"头像上传失败: {str(e)}"} 
+@router.post("/password/reset")
+async def reset_password(
+    password_data: PasswordResetRequest,
+    current_user: User = Depends(get_current_user)
+) -> Dict[str, str]:
+    """
+    重置用户密码
+    """
+    try:
+        await UserService.reset_password(
+            user_id=current_user.id,
+            old_password=password_data.old,
+            new_password=password_data.new
+        )
+        return {"code": 200, "message": "密码修改成功"}
+    except ValueError as e:
+        return {"code": 500, "message": f"头像上传失败: {str(e)}"} 
+    except Exception as e:
+        return {"code": 500, "message": f"头像上传失败: {str(e)}"} 
 
 
 

@@ -38,6 +38,7 @@ register_tortoise(
                     'backend.app.models.announcement',
                     'backend.app.models.session',
                     'backend.app.models.college',
+                    'backend.app.models.score_review',
                     'aerich.models'
                 ],
                 'default_connection': 'default',

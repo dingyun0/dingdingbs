@@ -1,150 +1,109 @@
 <template>
-  <div class="container">
-    <div class="table-container">
-      <el-table
-        v-if="studentInfo"
-        :data="[studentInfo]"
-        border
-        class="table"
-        :default-expand-all="true"
-        row-key="sno"
-        :tree-props="{ children: 'children' }"
-      >
-        <el-table-column prop="sno" label="学号" width="100" />
-        <el-table-column prop="name" label="姓名" width="80" />
-        <el-table-column prop="class_name" label="班级" width="100" />
-        <el-table-column
-          prop="操作系统课程设计成绩"
-          label="操作系统课程设计"
-          width="150"
-          show-overflow-tooltip
+  <!-- 成绩疑问对话框 -->
+  <el-dialog v-model="reviewDialogVisible" title="提交成绩疑问" width="50%">
+    <el-form :model="reviewForm" label-width="100px">
+      <el-form-item label="问题类型" required>
+        <el-select
+          v-model="reviewForm.question_type"
+          placeholder="请选择问题类型"
+        >
+          <el-option label="成绩录入错误" value="input_error" />
+          <el-option label="成绩计算错误" value="calculation_error" />
+          <el-option label="其他问题" value="other" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="问题说明" required>
+        <el-input
+          v-model="reviewForm.content"
+          type="textarea"
+          :rows="4"
+          placeholder="请详细描述您的问题..."
         />
-        <el-table-column
-          prop="无线网络技术成绩"
-          label="无线网络技术"
-          width="120"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="计算机网络课程设计"
-          label="计算机网络课程设计"
-          width="150"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="操作系统"
-          label="操作系统"
-          width="100"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="人工智能与网络技术学科前沿"
-          label="人工智能与网络技术"
-          width="150"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="信息安全原理及应用"
-          label="信息安全"
-          width="100"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="Linux操作系统"
-          label="Linux"
-          width="100"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="Java程序设计"
-          label="Java"
-          width="100"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="credit_gpa"
-          label="学分绩点"
-          width="100"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="year_gpa"
-          label="学年绩点"
-          width="100"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="comprehensive_score"
-          label="学业分成绩"
-          width="100"
-          show-overflow-tooltip
-        />
-      </el-table>
-      <el-empty v-else description="暂无学业分信息" />
-    </div>
-  </div>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="reviewDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitReview">提交</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { getStudentTestBySno } from "@/api/comprehensive-test";
-import { useUserStore } from "@/store/user";
+import { ref } from "vue";
 import { ElMessage } from "element-plus";
+import { useUserStore } from "@/stores/user";
+import { submitScoreReview } from "@/api/scoreReview";
 
-const studentInfo = ref(null);
 const userStore = useUserStore();
 
-const getStudentInfo = async () => {
+interface ReviewForm {
+  student_sno: string;
+  student_name: string;
+  teacher_id: string;
+  semester: string;
+  question_type: string;
+  content: string;
+  status: string;
+  apply_time: Date;
+  review_time: Date | null;
+}
+
+// 成绩疑问对话框数据
+const reviewDialogVisible = ref(false);
+const reviewForm = ref<ReviewForm>({
+  student_sno: userStore.sno,
+  student_name: userStore.name,
+  teacher_id: "",
+  semester: "",
+  question_type: "",
+  content: "",
+  status: "pending",
+  apply_time: new Date(),
+  review_time: null,
+});
+
+// 打开成绩疑问对话框
+const openReviewDialog = (teacherId: string, semester: string) => {
+  reviewForm.value.teacher_id = teacherId;
+  reviewForm.value.semester = semester;
+  reviewDialogVisible.value = true;
+};
+
+// 提交成绩疑问
+const submitReview = async () => {
+  if (!reviewForm.value.question_type || !reviewForm.value.content) {
+    ElMessage.warning("请填写完整的疑问信息");
+    return;
+  }
+
   try {
-    const sno = userStore.sno;
-    if (!sno) {
-      ElMessage.warning("当前用户无学号信息");
-      return;
-    }
-    const res = await getStudentTestBySno(sno);
-    if (res.data.code === 200) {
-      studentInfo.value = res.data.data;
+    const res = await submitScoreReview(reviewForm.value);
+    if (res.code === 200) {
+      ElMessage.success("提交成功");
+      reviewDialogVisible.value = false;
+      // 重置表单
+      reviewForm.value.question_type = "";
+      reviewForm.value.content = "";
     } else {
-      ElMessage.warning(res.data.message);
+      ElMessage.error(res.message || "提交失败");
     }
   } catch (error) {
-    console.error("获取学生信息失败:", error);
-    ElMessage.error("获取学生信息失败");
+    console.error("提交成绩疑问失败:", error);
+    ElMessage.error("提交失败，请稍后重试");
   }
 };
 
-onMounted(() => {
-  getStudentInfo();
+defineExpose({
+  openReviewDialog,
 });
 </script>
 
 <style scoped>
-.container {
-  padding: 20px;
-}
-
-.table-container {
-  background-color: #fff;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.table {
-  width: 100%;
-}
-
-:deep(.el-table__header) {
-  font-weight: bold;
-  background-color: #f5f7fa;
-}
-
-:deep(.el-table__row) {
-  cursor: default;
-}
-
-:deep(.el-table .cell) {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style>

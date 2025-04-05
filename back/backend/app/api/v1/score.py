@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from backend.app.schemas.score import SaveScore
+from backend.app.schemas.score import SaveScore, ScoreReview
 from backend.app.services.score_service import ScoreService
 from backend.app.common.jwt import DependsJwtUser
 
@@ -46,3 +46,15 @@ async def get_inputted_college():
     """
     return await ScoreService.get_inputted_college()
 
+@router.post('/review_score', summary="提交成绩疑问申请")
+async def submit_score_review(data: ScoreReview):
+    """
+    提交成绩疑问申请
+    
+    Args:
+        data: 成绩疑问申请数据
+        
+    Returns:
+        提交结果
+    """
+    return await ScoreService.submit_score_review(data)

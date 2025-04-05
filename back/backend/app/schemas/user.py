@@ -3,7 +3,7 @@
 import datetime
 
 from email_validator import EmailNotValidError, validate_email
-from pydantic import UUID4, ConfigDict, EmailStr, field_validator, BaseModel
+from pydantic import UUID4, ConfigDict, EmailStr, field_validator, BaseModel, Field
 
 from backend.app.schemas.base import SchemaBase
 
@@ -90,3 +90,16 @@ class UpdateTeacherRole(SchemaBase):
     major: str
     title: str
     name:str
+
+
+class PasswordResetRequest(BaseModel):
+    old: str = Field(..., description="旧密码")
+    new: str = Field(..., min_length=6, max_length=20, description="新密码")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "old": "oldpassword123",
+                "new": "newpassword123"
+            }
+        }
