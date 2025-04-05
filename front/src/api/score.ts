@@ -38,3 +38,18 @@ export const getScoreReviewReq = (data: any) => {
     data: data,
   });
 };
+
+export const getScoreReviewList = () => {
+  return request({
+    url: "/scores/get_review_score_list",
+    method: "get",
+  });
+};
+
+export const submitScoreReviewResult = (data: any) => {
+  return request({
+    url: "/scores/submit_score_review_result",
+    method: "post",
+    data: data,
+  });
+};

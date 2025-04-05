@@ -114,5 +114,26 @@ class ScoreDao(DaoBase):
             logging.error(f"保存成绩疑问申请失败: {str(e)}", exc_info=True)
             return False
 
+    async def get_review_score_list(self, page: int = 1, page_size: int = 10, status: str = None):
+        """获取成绩疑问申请列表"""
+        try:
+            # 构建查询条件
+            query = ReviewScore.all()
+            if status:
+                query = query.filter(status=status)
+            
+            # 获取总数
+            total = await query.count()
+            
+            # 分页查询
+            offset = (page - 1) * page_size
+            reviews = await query.offset(offset).limit(page_size).order_by('-apply_time')
+            
+            return reviews, total
+        except Exception as e:
+            logging.error(f"获取成绩疑问申请列表失败: {str(e)}", exc_info=True)
+            raise
+
+
 # 创建全局实例
 score_dao = ScoreDao()

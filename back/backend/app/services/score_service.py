@@ -123,3 +123,44 @@ class ScoreService:
         except Exception as e:
             logging.error(f"提交成绩疑问申请失败: {str(e)}", exc_info=True)
             return {"code": 500, "message": f"提交失败: {str(e)}"}
+        
+    @staticmethod
+    async def get_review_score_list(page: int = 1, page_size: int = 10, status: str = None):
+        """获取成绩疑问申请列表"""
+        try:
+            reviews, total = await score_dao.get_review_score_list(page, page_size, status)
+            # 将 Tortoise ORM 模型转换为字典
+            review_list = []
+            for review in reviews:
+                review_dict = {
+                    "id": review.id,
+                    "student_sno": review.student_sno,
+                    "student_name": review.student_name,
+                    "teacher_id": review.teacher_id,
+                    "question_type": review.question_type,
+                    "content": review.content,
+                    "status": review.status,
+                    "apply_time": str(review.apply_time),
+                    "review_time": str(review.review_time) if review.review_time else None,
+                    "review_comment": review.review_comment
+                }
+                review_list.append(review_dict)
+            
+            return {
+                "code": 200,
+                "message": "获取成功",
+                "data": {
+                    "list": review_list,
+                    "total": total,
+                    "page": page,
+                    "page_size": page_size
+                }
+            }
+        except Exception as e:
+            logging.error(f"获取成绩疑问申请列表失败: {str(e)}", exc_info=True)
+            return {
+                "code": 500,
+                "message": f"获取失败: {str(e)}",
+                "data": None
+            }
+    

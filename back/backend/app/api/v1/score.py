@@ -58,3 +58,22 @@ async def submit_score_review(data: ScoreReview):
         提交结果
     """
     return await ScoreService.submit_score_review(data)
+
+@router.get('/get_review_score_list', summary="获取成绩疑问申请列表")
+async def get_review_score_list(
+    page: int = 1,
+    page_size: int = 10,
+    status: str = None
+):
+    """
+    获取成绩疑问申请列表
+    
+    Args:
+        page: 页码
+        page_size: 每页数量
+        status: 状态筛选（可选）
+        
+    Returns:
+        成绩疑问申请列表和总数
+    """
+    return await ScoreService.get_review_score_list(page, page_size, status)

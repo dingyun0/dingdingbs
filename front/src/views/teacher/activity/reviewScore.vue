@@ -17,7 +17,6 @@
       >
         <el-table-column prop="student_sno" label="学号" width="120" />
         <el-table-column prop="student_name" label="学生姓名" width="120" />
-        <el-table-column prop="semester" label="学期" width="120" />
         <el-table-column prop="question_type" label="疑问类型" width="120">
           <template #default="scope">
             {{ formatQuestionType(scope.row.question_type) }}
@@ -82,37 +81,40 @@
     <el-dialog
       v-model="dialogVisible"
       :title="isView ? '查看详情' : '成绩疑问审核'"
-      width="50%"
+      width="600px"
       :close-on-click-modal="false"
+      class="review-dialog"
     >
       <el-form
         ref="reviewFormRef"
         :model="reviewForm"
         :rules="rules"
         label-width="100px"
+        class="review-form"
       >
-        <el-form-item label="学生学号">
-          <span>{{ currentReview?.student_sno }}</span>
+        <div class="info-section">
+          <el-form-item label="学生学号">
+            <span>{{ currentReview?.student_sno }}</span>
+          </el-form-item>
+          <el-form-item label="学生姓名">
+            <span>{{ currentReview?.student_name }}</span>
+          </el-form-item>
+          <el-form-item label="疑问类型">
+            <span>{{
+              formatQuestionType(currentReview?.question_type || "")
+            }}</span>
+          </el-form-item>
+          <el-form-item label="申请时间">
+            <span>{{ formatDate(currentReview?.apply_time || "") }}</span>
+          </el-form-item>
+        </div>
+
+        <el-form-item label="疑问说明" class="content-item">
+          <div>{{ currentReview?.content }}</div>
         </el-form-item>
-        <el-form-item label="学生姓名">
-          <span>{{ currentReview?.student_name }}</span>
-        </el-form-item>
-        <el-form-item label="学期">
-          <span>{{ currentReview?.semester }}</span>
-        </el-form-item>
-        <el-form-item label="疑问类型">
-          <span>{{
-            formatQuestionType(currentReview?.question_type || "")
-          }}</span>
-        </el-form-item>
-        <el-form-item label="疑问说明">
-          <div class="content-box">{{ currentReview?.content }}</div>
-        </el-form-item>
-        <el-form-item label="申请时间">
-          <span>{{ formatDate(currentReview?.apply_time || "") }}</span>
-        </el-form-item>
+
         <template v-if="!isView">
-          <el-form-item label="审核结果" prop="status">
+          <el-form-item label="审核结果" prop="status" class="review-result">
             <el-radio-group v-model="reviewForm.status">
               <el-radio label="approved">通过</el-radio>
               <el-radio label="rejected">不通过</el-radio>
@@ -157,13 +159,13 @@ import { ref, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import dayjs from "dayjs";
+import { getScoreReviewList, submitScoreReviewResult } from "@/api/score";
 
 // 接口定义
 interface ReviewItem {
   id: number;
   student_sno: string;
   student_name: string;
-  semester: string;
   question_type: string;
   content: string;
   status: string;
@@ -231,40 +233,17 @@ const getStatusType = (status: string) => {
 const getReviewList = async () => {
   loading.value = true;
   try {
-    // TODO: 替换为实际的API调用
-    // const res = await getScoreReviewList({
-    //   page: currentPage.value,
-    //   page_size: pageSize.value,
-    // });
-    // reviewList.value = res.data.data.list;
-    // total.value = res.data.data.total;
+    const { data: response } = await getScoreReviewList({
+      page: currentPage.value,
+      page_size: pageSize.value,
+    });
 
-    // 模拟数据
-    reviewList.value = [
-      {
-        id: 1,
-        student_sno: "2021001",
-        student_name: "张三",
-        semester: "2023-2024-1",
-        question_type: "academic",
-        content: "我的期末考试成绩似乎有误",
-        status: "pending",
-        apply_time: "2024-01-15 14:30:00",
-      },
-      {
-        id: 2,
-        student_sno: "2021002",
-        student_name: "李四",
-        semester: "2023-2024-1",
-        question_type: "moral",
-        content: "德育分计算可能有误",
-        status: "approved",
-        apply_time: "2024-01-10 09:15:00",
-        review_comment: "已核实并更正",
-        review_time: "2024-01-11 10:20:00",
-      },
-    ];
-    total.value = 2;
+    if (response.code === 200 && response.data) {
+      reviewList.value = response.data.list;
+      total.value = response.data.total;
+    } else {
+      ElMessage.error(response.message || "获取列表失败");
+    }
   } catch (error) {
     console.error("获取审核列表失败:", error);
     ElMessage.error("获取审核列表失败");
@@ -296,18 +275,21 @@ const submitReview = async () => {
   if (!reviewFormRef.value) return;
 
   await reviewFormRef.value.validate(async (valid) => {
-    if (valid) {
+    if (valid && currentReview.value) {
       try {
-        // TODO: 替换为实际的API调用
-        // const res = await submitScoreReviewResult({
-        //   review_id: currentReview.value?.id,
-        //   status: reviewForm.value.status,
-        //   comment: reviewForm.value.comment,
-        // });
+        const { data: response } = await submitScoreReviewResult({
+          review_id: currentReview.value.id,
+          status: reviewForm.value.status,
+          comment: reviewForm.value.comment,
+        });
 
-        ElMessage.success("审核成功");
-        dialogVisible.value = false;
-        getReviewList(); // 刷新列表
+        if (response.code === 200) {
+          ElMessage.success("审核成功");
+          dialogVisible.value = false;
+          getReviewList(); // 刷新列表
+        } else {
+          ElMessage.error(response.message || "审核失败");
+        }
       } catch (error) {
         console.error("审核失败:", error);
         ElMessage.error("审核失败");
@@ -355,13 +337,45 @@ onMounted(() => {
   color: #303133;
 }
 
+.review-dialog :deep(.el-dialog__body) {
+  padding: 20px 30px;
+}
+
+.review-form {
+  margin: 0;
+}
+
+.info-section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.info-section :deep(.el-form-item) {
+  margin-bottom: 0;
+}
+
+.content-item {
+  margin-bottom: 24px;
+}
+
 .content-box {
-  padding: 12px;
+  padding: 12px 16px;
   background-color: #f8f9fa;
   border-radius: 4px;
   min-height: 60px;
+  max-height: 200px;
+  overflow-y: auto;
   line-height: 1.6;
   color: #606266;
+  border: 1px solid #e4e7ed;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.review-result {
+  margin-top: 24px;
 }
 
 .pagination-container {
@@ -372,15 +386,16 @@ onMounted(() => {
 
 :deep(.el-form-item__label) {
   font-weight: 500;
-}
-
-:deep(.el-dialog__body) {
-  padding: 20px 30px;
+  color: #606266;
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+:deep(.el-form-item.is-required .el-form-item__label::before) {
+  margin-right: 2px;
 }
 </style>
