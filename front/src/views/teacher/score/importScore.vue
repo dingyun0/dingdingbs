@@ -126,6 +126,17 @@
         <el-table-column prop="department" label="学院" />
         <el-table-column prop="major" label="专业" />
         <el-table-column prop="grade" label="年级" />
+        <el-table-column label="操作" width="120" align="center">
+          <template #default="scope">
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleViewScores(scope.row)"
+            >
+              查看
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </el-dialog>
 
@@ -151,7 +162,7 @@ import { saveScoreReq } from "@/api/score";
 import { ElMessage } from "element-plus";
 import { getSessionOptionsReq, getFilteredCoursesReq } from "@/api/session";
 import { getCollegeList } from "@/api/college";
-import { getInputtedCollege } from "@/api/score";
+import { getInputtedCollege, getCollegeScores } from "@/api/score";
 import {
   SessionOptionsResponse,
   FilteredCoursesResponse,
@@ -330,7 +341,7 @@ const showImportDialog = async () => {
   dialogVisible.value = true;
 };
 
-// 新增确认基本信息的处理函数
+// 修改确认基本信息的处理函数
 const handleConfirmBasicInfo = async () => {
   try {
     // 验证表单是否填写完整
@@ -350,6 +361,10 @@ const handleConfirmBasicInfo = async () => {
     });
 
     if (res.data.code === 200) {
+      // 清空表格数据
+      tableData.value = [];
+
+      // 更新列配置
       columns.value = [
         { prop: "id", label: "ID", width: "55", align: "center" },
         { prop: "sno", label: "学号" },
@@ -500,6 +515,55 @@ const showInputtedInfo = async () => {
   } catch (error) {
     console.error("获取已录入信息失败:", error);
     ElMessage.error("获取已录入信息失败");
+  }
+};
+
+// 添加查看成绩处理函数
+const handleViewScores = async (row) => {
+  try {
+    // 关闭弹窗
+    inputtedInfoVisible.value = false;
+
+    // 请求成绩数据
+    const res = await getCollegeScores({
+      department: row.department,
+      major: row.major,
+      grade: row.grade,
+    });
+
+    if (res.data.code === 200) {
+      // 更新表格数据
+      tableData.value = res.data.data;
+
+      // 根据返回的数据动态更新列配置
+      if (res.data.data.length > 0) {
+        const firstRow = res.data.data[0];
+        columns.value = [
+          { prop: "sno", label: "学号", width: "120" },
+          { prop: "name", label: "姓名", width: "100" },
+          { prop: "department", label: "学院" },
+          { prop: "major", label: "专业" },
+          { prop: "grade", label: "年级" },
+          ...Object.keys(firstRow)
+            .filter(
+              (key) =>
+                !["sno", "name", "department", "major", "grade"].includes(key)
+            )
+            .map((key) => ({
+              prop: key,
+              label: key,
+              width: "120",
+            })),
+        ];
+      }
+
+      ElMessage.success("获取成绩数据成功");
+    } else {
+      ElMessage.warning(res.data.message || "获取成绩数据失败");
+    }
+  } catch (error) {
+    console.error("获取成绩数据失败:", error);
+    ElMessage.error("获取成绩数据失败");
   }
 };
 </script>
