@@ -7,21 +7,56 @@
         border
         style="width: 100%"
       >
-        <el-table-column prop="activity_id" label="活动ID" width="100" />
-        <el-table-column prop="activity_title" label="活动名称" width="200" />
-        <el-table-column prop="student_sno" label="学生学号" width="150" />
-        <el-table-column prop="apply_time" label="申请时间" width="180" />
-        <el-table-column prop="credits" label="活动分" width="180">
+        <el-table-column prop="activity_id" label="活动ID" width="80" />
+        <el-table-column prop="activity_title" label="活动名称" width="180" />
+        <el-table-column prop="student_sno" label="学生学号" width="120" />
+        <el-table-column label="活动类型" width="100">
+          <template #default="scope">
+            {{ scope.row.activity_category }}
+          </template>
+        </el-table-column>
+        <el-table-column label="申请时间" width="160">
           <template #default="scope">
             {{ formatDate(scope.row.apply_time) }}
           </template>
         </el-table-column>
-        <el-table-column prop="review_comment" label="审核状态" width="120">
+        <el-table-column label="活动分" width="80">
+          <template #default="scope">
+            {{ scope.row.credits }}
+          </template>
+        </el-table-column>
+        <el-table-column label="审核状态" width="100">
           <template #default="scope">
             {{ formatStatus(scope.row.status) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" fixed="right" width="200">
+        <el-table-column label="证明材料" width="120">
+          <template #default="scope">
+            <div v-if="hasProofFiles(scope.row)" class="proof-images">
+              <el-image
+                :src="getFirstProofImage(scope.row)"
+                fit="cover"
+                class="proof-thumbnail"
+                :preview-src-list="getProofImages(scope.row.proof_files)"
+                preview-teleported
+              >
+                <template #error>
+                  <div class="image-error">
+                    <el-icon><i-ep-picture-failed /></el-icon>
+                  </div>
+                </template>
+              </el-image>
+              <span
+                v-if="getProofImages(scope.row.proof_files).length > 1"
+                class="image-count"
+              >
+                +{{ getProofImages(scope.row.proof_files).length - 1 }}
+              </span>
+            </div>
+            <span v-else>无材料</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" fixed="right" width="100">
           <template #default="scope">
             <el-button
               v-if="scope.row.review_comment === '审核中'"
@@ -52,10 +87,40 @@
           <span>{{ currentActivity?.student_sno }}</span>
         </el-form-item>
         <el-form-item label="活动类型">
-          <span>{{ currentActivity?.category }}</span>
+          <span>{{ currentActivity?.activity_category }}</span>
+        </el-form-item>
+        <el-form-item label="活动分">
+          <span>{{ currentActivity?.credits }}</span>
         </el-form-item>
         <el-form-item label="申请时间">
           <span>{{ formatDate(currentActivity?.apply_time) }}</span>
+        </el-form-item>
+        <el-form-item label="申请描述" v-if="currentActivity?.comment">
+          <span class="form-text">{{ currentActivity?.comment }}</span>
+        </el-form-item>
+        <el-form-item label="证明材料" v-if="hasProofFiles(currentActivity)">
+          <div>
+            <div class="proof-images-container">
+              <el-image
+                v-for="(url, index) in getProofImages(
+                  currentActivity?.proof_files
+                )"
+                :key="index"
+                :src="url"
+                fit="contain"
+                class="proof-image"
+                :preview-src-list="getProofImages(currentActivity?.proof_files)"
+                :initial-index="index"
+                preview-teleported
+              >
+                <template #error>
+                  <div class="image-error">
+                    <el-icon><i-ep-picture-failed /></el-icon>
+                  </div>
+                </template>
+              </el-image>
+            </div>
+          </div>
         </el-form-item>
         <el-form-item label="审核结果" required>
           <el-radio-group v-model="reviewForm.review_comment">
@@ -88,18 +153,23 @@ import { ElMessage } from "element-plus";
 import { useUserStore } from "@/store/user";
 import { getReviewListReq, reviewActivity } from "@/api/activity";
 
+// 设置API基础URL
+const API_BASE_URL = "http://127.0.0.1:9005";
+
 interface ReviewItem {
   id: number;
   activity_id: number;
   activity_title: string;
   student_sno: string;
   teacher_id: number;
-  category: string;
+  activity_category: string;
   credits: string;
   status: string;
   apply_time: string;
   review_time?: string;
   review_comment?: string;
+  proof_files?: string;
+  comment?: string;
 }
 
 const userStore = useUserStore();
@@ -123,17 +193,66 @@ const formatStatus = (status: string) => {
     pending: "审核中",
     approved: "已通过",
     rejected: "未通过",
+    已申请: "审核中",
+    申请通过: "已通过",
+    申请未通过: "未通过",
+    审核中: "审核中",
   };
   return statusMap[status] || status;
 };
 
-// 获取待审核列表
+// 检查是否有证明材料
+const hasProofFiles = (item: ReviewItem | null): boolean => {
+  if (!item) return false;
+  return !!item.proof_files && item.proof_files.trim() !== "";
+};
+
+// 获取第一张证明图片
+const getFirstProofImage = (item: ReviewItem): string => {
+  if (!item.proof_files) return "";
+  const images = getProofImages(item.proof_files);
+  return images.length > 0 ? images[0] : "";
+};
+
+// 获取证明图片数组
+const getProofImages = (proofFiles: string | undefined): string[] => {
+  if (!proofFiles) return [];
+  console.log("处理证明图片URL:", proofFiles);
+
+  // 将逗号分隔的URL字符串转换为数组
+  return proofFiles
+    .split(",")
+    .filter((url) => url.trim() !== "")
+    .map((url) => {
+      // 如果已经是完整URL，直接返回
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+      }
+
+      // 确保URL路径正确（避免双斜杠问题）
+      if (url.startsWith("/")) {
+        return `${API_BASE_URL}${url}`;
+      } else {
+        return `${API_BASE_URL}/${url}`;
+      }
+    });
+};
+
 // 获取待审核列表
 const getReviewList = async () => {
   try {
     const res = await getReviewListReq();
     if (res.data.code === 200) {
       reviewList.value = res.data.data;
+      console.log("审核列表数据:", JSON.stringify(reviewList.value, null, 2));
+
+      // 检查每个项目的proof_files字段
+      reviewList.value.forEach((item, index) => {
+        console.log(`项目 ${index} 的proof_files:`, item.proof_files);
+        if (item.proof_files) {
+          console.log("转换后的图片URL:", getProofImages(item.proof_files));
+        }
+      });
     } else {
       ElMessage.warning(res.data.msg || "获取审核列表失败");
     }
@@ -146,6 +265,12 @@ const getReviewList = async () => {
 // 打开审核对话框
 const handleReview = (row: ReviewItem) => {
   currentActivity.value = row;
+  console.log("当前活动详情:", JSON.stringify(row, null, 2));
+  console.log("证明材料:", row.proof_files);
+  if (row.proof_files) {
+    console.log("转换后的图片URL:", getProofImages(row.proof_files));
+  }
+
   reviewForm.value = {
     review_comment: "",
     comment: "",
@@ -165,17 +290,20 @@ const submitReview = async () => {
   }
 
   try {
-    // TODO: 替换为实际的API调用
     const res = await reviewActivity({
       review_id: currentActivity.value?.id,
       review_comment: reviewForm.value.review_comment,
       comment: reviewForm.value.comment,
-      category: currentActivity.value.category,
+      category: currentActivity.value?.activity_category,
     });
 
-    ElMessage.success("审核成功");
-    dialogVisible.value = false;
-    await getReviewList(); // 刷新列表
+    if (res.data.code === 200) {
+      ElMessage.success("审核成功");
+      dialogVisible.value = false;
+      await getReviewList(); // 刷新列表
+    } else {
+      ElMessage.error(res.data.msg || "审核失败");
+    }
   } catch (error) {
     console.error("审核失败:", error);
     ElMessage.error("审核失败");
@@ -206,5 +334,59 @@ onMounted(() => {
 
 :deep(.el-form-item__content) span {
   line-height: 32px;
+}
+
+.form-text {
+  display: block;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.proof-images {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.proof-thumbnail {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.image-count {
+  font-size: 12px;
+  color: #909399;
+  margin-left: 5px;
+}
+
+.proof-images-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.proof-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 4px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 1px solid #ebeef5;
+}
+
+.image-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: #f5f7fa;
+  color: #909399;
+  font-size: 20px;
 }
 </style>

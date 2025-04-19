@@ -8,6 +8,11 @@ export interface SessionOptionsResponse {
   };
 }
 
+export interface CollegeData {
+  name: string;
+  majors: string[];
+}
+
 // 添加课程列表响应类型
 export interface CourseItem {
   course_id: string;

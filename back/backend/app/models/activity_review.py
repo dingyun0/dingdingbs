@@ -17,7 +17,8 @@ class ActivityReview(Model):
     apply_time = fields.DatetimeField(description="申请时间", auto_now_add=True)
     review_time = fields.DatetimeField(description="审核时间", null=True)
     review_comment = fields.TextField(description="审核意见", default="审核中")
-    comment=fields.TextField(description="审核评论", null=True)
+    comment = fields.TextField(description="审核评论", null=True)
+    proof_files = fields.TextField(description="证明材料图片URL", null=True)  # 新增字段，存储逗号分隔的图片URL
     
     # 外键关联
     # activity = fields.ForeignKeyField(

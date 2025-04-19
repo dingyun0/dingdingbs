@@ -8,7 +8,7 @@ export const usePermissStore = defineStore("permiss", {
   state: () => {
     const defaultList: ObjectList = {
       admin: [
-        "0",
+        "181",
         "1",
         "12",
         "13",
@@ -51,7 +51,7 @@ export const usePermissStore = defineStore("permiss", {
         "171",
       ],
       teacher: [
-        "0",
+        "191",
         "3",
         "31",
         "32",
@@ -65,7 +65,7 @@ export const usePermissStore = defineStore("permiss", {
         "151",
       ],
       student: [
-        "0",
+        "201",
         "8",
         "81",
         "82",
@@ -76,6 +76,7 @@ export const usePermissStore = defineStore("permiss", {
         "11",
         "111",
         "112",
+        "113",
         "151",
       ],
     };

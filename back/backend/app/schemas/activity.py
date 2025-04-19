@@ -1,6 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel, Field
 from backend.app.schemas.base import SchemaBase
+from typing import Optional
 
 class ActivityBase(SchemaBase):
     title: str = Field(..., max_length=255, description="活动标题")
@@ -33,8 +34,10 @@ class ActivityApply(BaseModel):
     activity_title: str = Field(..., description="活动名称")
     teacher_id: int = Field(..., description="审核老师ID")
     student_sno: str = Field(..., description="申请学生学号")
-    activity_category:str=Field(...,description='活动类型')
-    credits:str=Field(...,description="活动分")
+    activity_category: str = Field(..., description="活动类型")
+    credits: str = Field(..., description="活动分")
+    proof_files: Optional[str] = Field(None, description="证明材料图片URL")
+    comment: Optional[str] = Field(None, description="申请描述")
 
     class Config:
         from_attributes = True

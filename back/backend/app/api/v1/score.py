@@ -94,3 +94,13 @@ async def get_score_review_result(
     """
     return await ScoreService.get_score_review_result(student_sno)
 
+@router.get('/get_college_scores', summary="获取学院成绩信息")
+async def get_college_scores(
+    department: str,
+    major: str,
+    grade: str
+):
+    """
+    获取学院成绩信息
+    """
+    return await ScoreService.get_college_scores(department, major, grade)

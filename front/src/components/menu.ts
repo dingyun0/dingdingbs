@@ -2,10 +2,22 @@ import { Menus } from "@/types/menu";
 
 export const menuData: Menus[] = [
   {
-    id: "0",
-    title: "系统首页",
-    index: "/dashboard",
-    icon: "Odometer",
+    id: "181",
+    icon: "Calendar",
+    index: "/admin/guide",
+    title: "管理员端指南",
+  },
+  {
+    id: "191",
+    icon: "Calendar",
+    index: "/teacher/guide",
+    title: "老师端指南",
+  },
+  {
+    id: "201",
+    icon: "Calendar",
+    index: "/student/guide",
+    title: "学生端指南",
   },
   {
     id: "1",
@@ -225,6 +237,12 @@ export const menuData: Menus[] = [
         pid: "Calendar",
         index: "/activity/showActivity",
         title: "查看活动",
+      },
+      {
+        id: "113",
+        pid: "Calendar",
+        index: "/activity/otherActivity",
+        title: "其他活动加分申请",
       },
       {
         id: "112",

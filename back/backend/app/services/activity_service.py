@@ -73,31 +73,33 @@ class ActivityService:
         """申请活动"""
         try:
             # 检查活动是否存在
-            activity = await ActivityDAO.get_by_id(apply_data.activity_id)
-            if not activity:
-                return {"code": 404, "msg": "活动不存在", "data": None}
-            
-            # 检查活动是否已过期 - 使用timezone.now()替代datetime.now()
-            if activity.deadline < timezone.now():
-                return {"code": 400, "msg": "活动已过截止日期", "data": None}
-            
-            # 检查名额是否已满
-            if activity.quota <= 0:
-                return {"code": 400, "msg": "活动名额已满", "data": None}
-            
-            # 检查是否重复申请
-            existing_apply = await ActivityDAO.get_student_apply(
-                apply_data.activity_id, 
-                apply_data.student_sno
-            )
-            if existing_apply:
-                return {"code": 400, "msg": "已经申请过该活动", "data": None}
+            if apply_data.activity_id > 0:
+                activity = await ActivityDAO.get_by_id(apply_data.activity_id)
+                if not activity:
+                    return {"code": 404, "msg": "活动不存在", "data": None}
+                
+                # 检查活动是否已过期 - 使用timezone.now()替代datetime.now()
+                if activity.deadline < timezone.now():
+                    return {"code": 400, "msg": "活动已过截止日期", "data": None}
+                
+                # 检查名额是否已满
+                if activity.quota <= 0:
+                    return {"code": 400, "msg": "活动名额已满", "data": None}
+                
+                # 检查是否重复申请
+                existing_apply = await ActivityDAO.get_student_apply(
+                    apply_data.activity_id, 
+                    apply_data.student_sno
+                )
+                if existing_apply:
+                    return {"code": 400, "msg": "已经申请过该活动", "data": None}
             
             # 创建申请记录
             result = await ActivityDAO.create_apply(apply_data)
             
-            # 更新活动名额
-            await ActivityDAO.update_quota(apply_data.activity_id)
+            # 如果是关联到现有活动，更新活动名额
+            if apply_data.activity_id > 0:
+                await ActivityDAO.update_quota(apply_data.activity_id)
             
             return {"code": 200, "msg": "申请成功", "data": result}
         except Exception as e:
@@ -121,9 +123,13 @@ class ActivityService:
                     "student_sno": review.student_sno,
                     "teacher_id": review.teacher_id,
                     "status": review.status,
+                    "credits": review.credits,
+                    "activity_category": review.activity_category,
                     "apply_time": review.apply_time.isoformat(),
                     "review_time": review.review_time.isoformat() if review.review_time else None,
-                    "review_comment": review.review_comment
+                    "review_comment": review.review_comment,
+                    "proof_files": review.proof_files,
+                    "comment": review.comment
                 })
             
             return {
@@ -187,7 +193,8 @@ class ActivityService:
                     "status": review.status,
                     "apply_time": review.apply_time.isoformat(),
                     "review_time": review.review_time.isoformat() if review.review_time else None,
-                    "comment": review.comment
+                    "comment": review.comment,
+                    "proof_files": review.proof_files
                 })
             
             return {

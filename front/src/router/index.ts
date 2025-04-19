@@ -287,6 +287,18 @@ const routes: RouteRecordRaw[] = [
           ),
       },
       {
+        path: "/activity/otherActivity",
+        name: "otherActivity",
+        meta: {
+          title: "其他活动加分申请",
+          permiss: "113",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "theme" */ "../views/student/activity/otherActivity.vue"
+          ),
+      },
+      {
         path: "/activity/reviewActivity",
         name: "reviewActivity",
         meta: {
@@ -343,6 +355,36 @@ const routes: RouteRecordRaw[] = [
         },
         component: () =>
           import(/* webpackChunkName: "theme" */ "../views/common/ucenter.vue"),
+      },
+      {
+        path: "/admin/guide",
+        name: "adminGuide",
+        meta: {
+          title: "管理员端指南",
+          permiss: "181",
+        },
+        component: () =>
+          import(/* webpackChunkName: "theme" */ "../views/admin/guide.vue"),
+      },
+      {
+        path: "/teacher/guide",
+        name: "teacherGuide",
+        meta: {
+          title: "老师端指南",
+          permiss: "191",
+        },
+        component: () =>
+          import(/* webpackChunkName: "theme" */ "../views/teacher/guide.vue"),
+      },
+      {
+        path: "/student/guide",
+        name: "studentGuide",
+        meta: {
+          title: "学生端指南",
+          permiss: "201",
+        },
+        component: () =>
+          import(/* webpackChunkName: "theme" */ "../views/student/guide.vue"),
       },
 
       {

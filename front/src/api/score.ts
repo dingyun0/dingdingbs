@@ -61,3 +61,11 @@ export const getScoreReviewResult = (student_sno: any) => {
     params: { student_sno },
   });
 };
+
+export const getCollegeScores = (data) => {
+  return request({
+    method: "get",
+    url: "/scores/get_college_scores",
+    params: data,
+  });
+};

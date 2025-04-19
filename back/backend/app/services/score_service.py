@@ -254,3 +254,48 @@ class ScoreService:
                 "data": None
             }
     
+    @staticmethod
+    async def get_college_scores(department: str, major: str, grade: str):
+        """获取学院成绩信息"""
+        try:
+            # 先获取该学院专业年级的课程列表
+            courses = await session_dao.get_filtered_courses(department, major, grade)
+            if not courses:
+                return {
+                    "code": 200,
+                    "message": "未找到该学院专业年级的课程",
+                    "data": []
+                }
+            
+            # 获取成绩数据
+            scores = await score_dao.get_college_scores(department, major, grade, courses)
+            
+            # 组织返回数据
+            result = []
+            for score in scores:
+                score_dict = {
+                    "sno": score.sno,
+                    "name": score.name,
+                    "department": score.department,
+                    "major": score.major,
+                    "grade": score.grade
+                }
+                
+                # 只添加该学院专业年级的课程成绩
+                for course in courses:
+                    score_dict[course.course_name] = getattr(score, course.course_name, "")
+                
+                result.append(score_dict)
+            
+            return {
+                "code": 200,
+                "message": "获取成功",
+                "data": result
+            }
+        except Exception as e:
+            logging.error(f"获取学院成绩信息失败: {str(e)}", exc_info=True)
+            return {
+                "code": 500,
+                "message": f"获取失败: {str(e)}",
+                "data": None
+            }

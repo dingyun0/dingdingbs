@@ -44,6 +44,10 @@ async def apply_activity(apply_data: ActivityApply):
     - activity_title: 活动名称
     - teacher_id: 审核老师ID
     - student_sno: 申请学生学号
+    - activity_category: 活动类型
+    - credits: 活动分数
+    - proof_files: 证明材料图片URL (可选)
+    - comment: 申请描述 (可选)
     """
     try:
         result = await ActivityService.apply_activity(apply_data)

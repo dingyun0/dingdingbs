@@ -60,7 +60,10 @@ class ActivityDAO:
                 student_sno=apply_data.student_sno,
                 activity_category=apply_data.activity_category,
                 credits=apply_data.credits,
-                status="审核中"
+                status="已申请",
+                review_comment="审核中",
+                proof_files=apply_data.proof_files,
+                comment=apply_data.comment
             )
             return review
 

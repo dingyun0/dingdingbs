@@ -200,6 +200,31 @@ class ScoreDao(DaoBase):
         except Exception as e:
             logging.error(f"获取成绩疑问审核结果失败: {str(e)}", exc_info=True)
             raise
-        
+
+    async def get_college_scores(self, department: str, major: str, grade: str, courses):
+        """获取学院成绩信息"""
+        try:
+            # 获取指定学院专业年级的所有学生成绩
+            scores = await self.model.filter(
+                department=department,
+                major=major,
+                grade=grade
+            ).all()
+            
+            # 过滤出有对应课程成绩的学生
+            filtered_scores = []
+            for score in scores:
+                has_course_score = False
+                for course in courses:
+                    if hasattr(score, course.course_name) and getattr(score, course.course_name):
+                        has_course_score = True
+                        break
+                if has_course_score:
+                    filtered_scores.append(score)
+            
+            return filtered_scores
+        except Exception as e:
+            logging.error(f"获取学院成绩信息失败: {str(e)}", exc_info=True)
+            raise
 # 创建全局实例
 score_dao = ScoreDao()
