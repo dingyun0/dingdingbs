@@ -121,27 +121,40 @@ export const menuData: Menus[] = [
       },
     ],
   },
+
   {
-    id: "3",
+    id: "33",
+    icon: "Guide",
+    index: "/importScore",
     title: "成绩管理",
-    index: "3",
-    icon: "Calendar",
+  },
+  {
+    id: "16",
+    icon: "Guide",
+    index: "16",
+    title: "审核管理",
     children: [
       {
-        id: "33",
-        pid: "3",
-        index: "/importScore",
-        title: "导入成绩Excel",
+        id: "161",
+        pid: "Calendar",
+        index: "/activity/reviewActivity",
+        title: "审核学生活动申请",
       },
-
       {
-        id: "34",
-        pid: "3",
-        index: "/exportComprehensive",
-        title: "导出综测Excel",
+        id: "162",
+        pid: "Calendar",
+        index: "/activity/reviewScore",
+        title: "审核学生成绩疑惑",
       },
     ],
   },
+  {
+    id: "34",
+    icon: "Guide",
+    index: "/exportComprehensive",
+    title: "综测管理",
+  },
+
   {
     id: "4",
     icon: "PieChart",
@@ -253,26 +266,6 @@ export const menuData: Menus[] = [
     ],
   },
 
-  {
-    id: "16",
-    icon: "Guide",
-    index: "16",
-    title: "审核管理",
-    children: [
-      {
-        id: "161",
-        pid: "Calendar",
-        index: "/activity/reviewActivity",
-        title: "审核学生活动申请",
-      },
-      {
-        id: "162",
-        pid: "Calendar",
-        index: "/activity/reviewScore",
-        title: "审核学生成绩疑惑",
-      },
-    ],
-  },
   {
     id: "13",
     icon: "Guide",

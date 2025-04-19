@@ -102,7 +102,7 @@ const loginFunc = () => {
         userStore.setUsername(param.username);
 
         try {
-          // 获取用户信息
+          // 先获取用户信息
           const userInfo = await userInfoReq();
           console.log("用户信息:", userInfo);
 
@@ -110,6 +110,7 @@ const loginFunc = () => {
           if (userInfo.data && userInfo.data.data) {
             userStore.setUserInfo(userInfo.data.data);
           }
+          console.log(userInfo.data.data, "userInfo.data.data");
 
           // 获取路由权限
           const routeInfo = await getRouterReq();
@@ -127,7 +128,24 @@ const loginFunc = () => {
             localStorage.removeItem("login-param");
           }
 
-          router.push("/");
+          // 根据用户信息中的角色决定跳转路径
+          let guidePath = "/";
+          if (userInfo.data && userInfo.data.data && userInfo.data.data.roles) {
+            switch (userInfo.data.data.roles) {
+              case "admin":
+                guidePath = "/admin/guide";
+                break;
+              case "teacher":
+                guidePath = "/teacher/guide";
+                break;
+              case "student":
+                guidePath = "/student/guide";
+                break;
+            }
+          }
+
+          // 跳转到对应的指南页面
+          router.push(guidePath);
         } catch (error) {
           console.error("获取信息失败:", error);
           ElMessage.error("获取用户信息失败");
