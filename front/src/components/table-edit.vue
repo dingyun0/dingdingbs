@@ -5,10 +5,17 @@
     :rules="rules"
     :label-width="options.labelWidth"
   >
-    <el-row>
-      <el-col :span="options.span" v-for="item in options.list">
-        <el-form-item :label="item.label" :prop="item.prop">
-          <!-- 文本框、数字框、下拉框、日期框、开关、上传 -->
+    <el-row :gutter="20">
+      <el-col
+        v-for="(item, index) in options.list"
+        :key="index"
+        :span="options.span || 24"
+      >
+        <el-form-item
+          :label="item.label"
+          :prop="item.prop"
+          :required="item.required"
+        >
           <el-input
             v-if="item.type === 'input'"
             v-model="form[item.prop]"
@@ -26,12 +33,11 @@
             v-else-if="item.type === 'select'"
             v-model="form[item.prop]"
             :disabled="item.disabled"
-            :placeholder="item.placeholder"
-            clearable
+            @change="item.change && item.change(form[item.prop])"
           >
             <el-option
-              v-for="opt in item.options"
-              :key="opt.value"
+              v-for="(opt, i) in item.options"
+              :key="i"
               :label="opt.label"
               :value="opt.value"
             ></el-option>

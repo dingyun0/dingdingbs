@@ -23,11 +23,16 @@ TORTOISE_ORM = {
         }
     },
     'apps': {
-        'models': {  # 这是 app 名称
+        'models': {
             'models': [
                 'backend.app.models.announcement',
-                'backend.app.models.user',  # 用户模型
-                'aerich.models'     # aerich 需要的模型
+                'backend.app.models.user',
+                'backend.app.models.score',
+                'backend.app.models.session',
+                'backend.app.models.comprehensive_test',
+                'backend.app.models.student',
+                'backend.app.models.teacher',
+                'aerich.models'
             ],
             'default_connection': 'default',
         }

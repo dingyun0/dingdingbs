@@ -5,6 +5,7 @@ interface UserState {
   username: string;
   roles: string;
   token: string;
+  sno: string;
 }
 
 export const useUserStore = defineStore("user", {
@@ -13,6 +14,7 @@ export const useUserStore = defineStore("user", {
     username: localStorage.getItem("vuems_name") || "",
     roles: "",
     token: localStorage.getItem("token") || "",
+    sno: "",
   }),
 
   actions: {
@@ -21,6 +23,7 @@ export const useUserStore = defineStore("user", {
       this.id = userInfo.id;
       this.username = userInfo.username;
       this.roles = userInfo.roles;
+      this.sno = userInfo.sno;
     },
 
     // 设置 token
@@ -41,6 +44,7 @@ export const useUserStore = defineStore("user", {
       this.username = "";
       this.roles = "";
       this.token = "";
+      this.sno = "";
       localStorage.removeItem("token");
       localStorage.removeItem("vuems_name");
     },

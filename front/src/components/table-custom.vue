@@ -16,26 +16,8 @@
           </el-tooltip>
           <el-divider direction="vertical" />
         </template>
-        <el-tooltip effect="dark" content="刷新" placement="top">
-          <el-icon class="columns-setting-icon" @click="refresh">
-            <Refresh />
-          </el-icon>
-        </el-tooltip>
+
         <el-divider direction="vertical" />
-        <el-tooltip effect="dark" content="列设置" placement="top">
-          <el-dropdown :hide-on-click="false" size="small" trigger="click">
-            <el-icon class="columns-setting-icon">
-              <Setting />
-            </el-icon>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item v-for="c in columns">
-                  <el-checkbox v-model="c.visible" :label="c.label" />
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </el-tooltip>
       </div>
     </div>
     <el-table

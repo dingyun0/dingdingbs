@@ -18,13 +18,19 @@ from backend.app.core.conf import Settings
 from backend.app.core.path_conf import AvatarPath
 from backend.app.dao.crud_dao import UserDao  # 导入单例实例
 from backend.app.models.user import User
+from backend.app.models.student import Student
+
+from backend.app.models.teacher import Teacher
 from backend.app.schemas.user import (Auth, Auth2, CreateUser, ResetPassword,
-                                      UpdateUser)
+                                      UpdateUser, UpdateTeacherInfo, UpdateStudentInfo)
 from backend.app.utils import re_verify
 from backend.app.utils.format_string import cut_path
 from backend.app.utils.generate_string import get_current_timestamp
 from backend.app.utils.send_email import send_verification_code_email
-
+from backend.app.dao.crud_dao import UserDao
+from backend.app.common.exception.errors import CustomError
+from tortoise.transactions import in_transaction
+from backend.app.common import jwt
 
 class UserService:
     @staticmethod
@@ -80,7 +86,7 @@ class UserService:
                     'roles': str(user.roles),
                     'joined_time': user.joined_time.strftime('%Y-%m-%d %H:%M:%S') if user.joined_time else None,
                     'last_login_time': user.last_login_time.strftime('%Y-%m-%d %H:%M:%S') if user.last_login_time else None,
-                    'uuid': str(user.uuid)
+                    'sno':str(user.sno) if user.sno else None
                 }
                 user_list.append(user_dict)
             
@@ -114,30 +120,34 @@ class UserService:
         return access_token, user
 
     @staticmethod
-    async def register(obj: CreateUser):
+    async def register(user_data: CreateUser):
         """用户注册"""
         try:
-            # 验证验证码
-            # redis_code = await redis_client.get(f'captcha:{obj.uuid}')
-            # if not redis_code:
-            #     raise errors.ForbiddenError(msg='验证码失效，请重新获取')
-            # if redis_code.lower() != obj.code.lower():
-            #     raise errors.CustomError(error=CustomCode.CAPTCHA_ERROR)
+            # 验证密码是否匹配
+            if user_data.password != user_data.confirmPassword:
+                return {"code": 400, "msg": "两次输入的密码不一致"}
             
-            # 验证用户名是否已存在
-            username = await UserDao.get_user_by_username(name=obj.username)
-            if username:
-                raise errors.ForbiddenError(msg='该用户名已被注册')
+            # 检查用户名是否已存在
+            existing_user = await User.filter(username=user_data.username).first()
+            if existing_user:
+                return {"code": 400, "msg": "用户名已存在"}
             
-            # 验证两次密码是否一致
-            # if obj.password != obj.confirmPassword:
-            #     raise errors.ForbiddenError(msg='两次输入的密码不一致')
+            # 检查学号是否已存在
+            existing_student = await User.filter(sno=user_data.sno).first()
+            if existing_student:
+                return {"code": 400, "msg": "该学号已注册"}
             
-            # 注册用户
-            await UserDao.register_user(obj)
+            # 创建用户和学生信息
+            await UserDao.create_user_with_student(user_data.dict())
             
+            return {"code": 200, "msg": "注册成功"}
+            
+        except CustomError as e:
+            return {"code": 500, "msg": str(e)}
         except Exception as e:
-            raise errors.ForbiddenError(msg=str(e))
+            return {"code": 500, "msg": f"注册失败: {str(e)}"}
+
+
 
     @staticmethod
     async def get_pwd_rest_captcha(*, username_or_email: str, response: Response):
@@ -212,6 +222,7 @@ class UserService:
                 'id': user.id,
                 'username': user.username,
                 'roles': user.roles,
+                'sno': user.sno if user.sno else None,
                 'joined_time': user.joined_time.strftime('%Y-%m-%d %H:%M:%S') if user.joined_time else None,
                 'last_login_time': user.last_login_time.strftime('%Y-%m-%d %H:%M:%S') if user.last_login_time else None
             }
@@ -583,33 +594,361 @@ class UserService:
             if not user:
                 raise errors.NotFoundError(msg='用户不存在')
             
-            # 更新角色
-            count = await UserDao.update_user_role(user_id, roles)
-            print("222",count)
+            # 如果角色是老师或管理员，将学号设置为 null
+            update_data = {"roles": roles}
+            if roles in ["admin", "teacher"]:
+                update_data["sno"] = None
+            
+            # 更新角色和学号
+            count = await UserDao.update_user_role(user_id, update_data)
             if count == 0:
                 raise errors.UpdateError(msg='更新角色失败')
             
             return count
         except Exception as e:
             print("更新用户角色错误:", str(e))
-            raise errors.CustomError(msg=f'更新用户角色失败: {str(e)}')
+            raise errors.CustomError(msg=f"更新用户角色失败: {str(e)}")
 
     @staticmethod
     async def delete_user(user_id: int) -> int:
-        """删除用户"""
+        """删除用户及其关联的教师/学生记录"""
         try:
             # 检查用户是否存在
             user = await UserDao.get_user_by_id(user_id)
             if not user:
-                raise errors.NotFoundError(msg='用户不存在')
+                raise errors.NotFoundError('用户不存在')
             
-            # 删除用户
-            count = await UserDao.delete_user(user_id)
-            if count == 0:
-                raise errors.DeleteError(msg='删除用户失败')
-            
-            return count
+            # 开启事务
+            async with in_transaction() as connection:
+                # 根据用户角色删除关联记录
+                if user.roles == "teacher":
+                    # 删除教师记录
+                    teacher = await Teacher.filter(user_id=user_id).using_db(connection).first()
+                    if teacher:
+                        await teacher.delete(using_db=connection)
+                        print(f"已删除用户ID为{user_id}的教师记录")
+                
+                elif user.roles == "student":
+                    # 删除学生记录
+                    student = await Student.filter(user_id=user_id).using_db(connection).first()
+                    if student:
+                        await student.delete(using_db=connection)
+                        print(f"已删除用户ID为{user_id}的学生记录")
+                
+                # 删除用户
+                count = await User.filter(id=user_id).using_db(connection).delete()
+                if count == 0:
+                    raise errors.DeleteError('删除用户失败')
+                
+                print(f"已删除用户ID为{user_id}的用户记录")
+                return count
+        
         except Exception as e:
             print("删除用户错误:", str(e))
-            raise errors.CustomError(msg=f'删除用户失败: {str(e)}')
+            raise errors.CustomError(f'删除用户失败: {str(e)}')
+
+    @staticmethod
+    async def get_users(page: int = 1, page_size: int = 10):
+        try:
+            # 获取用户总数
+            total = await User.all().count()
+            
+            # 获取分页数据
+            users = await User.all().offset((page - 1) * page_size).limit(page_size)
+            
+            # 构造返回数据
+            user_list = [{
+                "id": user.id,
+                "username": user.username,
+                "sno": user.sno,  # 添加学号字段
+                "roles": user.roles,
+                "joined_time": user.joined_time.strftime("%Y-%m-%d %H:%M:%S") if user.joined_time else None,
+                "last_login_time": user.last_login_time.strftime("%Y-%m-%d %H:%M:%S") if user.last_login_time else None
+            } for user in users]
+            
+            return {
+                "list": user_list,
+                "total": total
+            }
+        except Exception as e:
+            raise errors.CustomError(f"获取用户列表失败: {str(e)}")
+
+    @staticmethod
+    async def get_all_student_info(page: int = 1, page_size: int = 10):
+        """获取所有学生信息（分页）"""
+        try:
+            # 计算偏移量
+            offset = (page - 1) * page_size
+            print(f"分页参数 - 页码: {page}, 每页条数: {page_size}, 偏移量: {offset}")
+            
+            # 获取总数
+            total = await Student.all().count()
+            print(f"总记录数: {total}")
+            
+            # 获取分页数据
+            students = await Student.all().offset(offset).limit(page_size)
+            
+            # 将学生对象转换为字典列表
+            student_list = []
+            for student in students:
+                student_dict = {
+                    'id': str(student.id),
+                    'sno': str(student.sno),
+                    'name': str(student.name),
+                    'department': str(student.department),
+                    'major': str(student.major),
+                    'grade': str(student.grade),
+                    'class_name': str(student.class_name),
+                    'joined_time': student.joined_time.strftime('%Y-%m-%d %H:%M:%S') if student.joined_time else None,
+                    'user_id': str(student.user_id)
+                }
+                student_list.append(student_dict)
+            
+            result = {
+                'list': student_list,
+                'total': total,
+                'page': page,
+                'page_size': page_size
+            }
+            print(f"返回的分页数据: {result}")
+            return result
+        
+        except Exception as e:
+            print("获取所有学生信息错误:", str(e))
+            raise errors.CustomError(msg=f'获取学生信息失败: {str(e)}')
+
+    @staticmethod
+    async def get_all_teacher_info(page: int = 1, page_size: int = 10):
+        """获取所有教师信息（分页）"""
+        try:
+            print("来到了get_all_teacher_info")
+            # 计算偏移量
+            offset = (page - 1) * page_size
+            print(f"分页参数 - 页码: {page}, 每页条数: {page_size}, 偏移量: {offset}")
+            
+            # 获取总数
+            total = await Teacher.all().count()
+            print(f"总记录数: {total}")
+            
+            # 如果没有数据，返回空列表
+            if total == 0:
+                return {
+                    'list': [],
+                    'total': 0,
+                    'page': page,
+                    'page_size': page_size
+                }
+            
+            # 获取分页数据
+            teachers = await Teacher.all().offset(offset).limit(page_size)
+            
+            # 将教师对象转换为字典列表
+            teacher_list = []
+            for teacher in teachers:
+                try:
+                    # 获取关联的用户信息
+                    user = await User.get(id=teacher.user_id)
+                    teacher_dict = {
+                        'id': str(teacher.id),
+                        'department': str(teacher.department),
+                        'major': str(teacher.major),
+                        'title': str(teacher.title),
+                        'joined_time': teacher.joined_time.strftime('%Y-%m-%d %H:%M:%S') if teacher.joined_time else None,
+                        'user_id': str(teacher.user_id),
+                        'username': user.username if user else "未知用户"
+                    }
+                    teacher_list.append(teacher_dict)
+                except Exception as user_error:
+                    print(f"获取教师ID为{teacher.id}的用户信息失败: {str(user_error)}")
+                    # 跳过这条记录或添加一个带有默认值的记录
+                    teacher_dict = {
+                        'id': str(teacher.id),
+                        'department': str(teacher.department),
+                        'major': str(teacher.major),
+                        'title': str(teacher.title),
+                        'joined_time': teacher.joined_time.strftime('%Y-%m-%d %H:%M:%S') if teacher.joined_time else None,
+                        'user_id': str(teacher.user_id),
+                        'username': "未知用户"
+                    }
+                    teacher_list.append(teacher_dict)
+            
+            result = {
+                'list': teacher_list,
+                'total': total,
+                'page': page,
+                'page_size': page_size
+            }
+            print(f"返回的分页数据: {result}")
+            return result
+        
+        except Exception as e:
+            print("获取所有教师信息错误:", str(e))
+            # 修改错误处理方式，直接传递错误消息而不使用关键字参数
+            raise errors.CustomError(f'获取教师信息失败: {str(e)}')
+
+    @staticmethod
+    async def update_user_with_role_change(user_id: int, roles: str, teacher_data: dict = None):
+        """更新用户角色并处理相关表数据"""
+        try:
+            # 验证角色
+            valid_roles = ["admin", "teacher", "student"]
+            if roles not in valid_roles:
+                raise errors.ValidationError("无效的角色值")
+            
+            # 开启事务
+            async with in_transaction() as connection:
+                # 获取用户
+                user = await User.get(id=user_id).using_db(connection)
+                if not user:
+                    raise errors.NotFoundError('用户不存在')
+                
+                old_role = user.roles
+                
+                # 更新用户角色
+                user.roles = roles
+                if roles in ["admin", "teacher"]:
+                    user.sno = None
+                await user.save(using_db=connection)
+                
+                # 如果原角色是teacher，但新角色不是teacher，则删除teacher表记录
+                if old_role == "teacher" and roles != "teacher":
+                    # 删除教师记录
+                    teacher = await Teacher.filter(user_id=user_id).using_db(connection).first()
+                    if teacher:
+                        await teacher.delete(using_db=connection)
+                        print(f"已删除用户ID为{user_id}的教师记录")
+                
+                # 如果原角色是student，但新角色不是student，则删除student表记录
+                if old_role == "student" and roles != "student":
+                    # 删除学生记录
+                    student = await Student.filter(user_id=user_id).using_db(connection).first()
+                    if student:
+                        await student.delete(using_db=connection)
+                        print(f"已删除用户ID为{user_id}的学生记录")
+                
+                # 如果新角色是teacher，则添加或更新teacher表记录
+                if roles == "teacher":
+                    if teacher_data:
+                        # 检查是否已存在教师记录
+                        teacher = await Teacher.filter(user_id=user_id).using_db(connection).first()
+                        if teacher:
+                            # 更新现有教师记录
+                            teacher.department = teacher_data.get("department", "")
+                            teacher.major = teacher_data.get("major", "")
+                            teacher.title = teacher_data.get("title", "")
+                            teacher.name=teacher_data.get("name","")
+                            await teacher.save(using_db=connection)
+                            print(f"已更新用户ID为{user_id}的教师记录")
+                        else:
+                            # 创建新教师记录
+                            await Teacher.create(
+                                user_id=user_id,
+                                department=teacher_data.get("department", ""),
+                                major=teacher_data.get("major", ""),
+                                title=teacher_data.get("title", ""),
+                                name=teacher_data.get("name",""),
+                                using_db=connection
+                            )
+                            print(f"已创建用户ID为{user_id}的教师记录")
+                
+                # 如果新角色是student，则需要额外的学生信息来创建学生记录
+                # 暂时不实现，因为需要更多的输入参数
+                
+                return True
+        
+        except Exception as e:
+            print("更新用户角色错误:", str(e))
+            raise errors.CustomError(f"更新用户角色失败: {str(e)}")
+
+    @staticmethod
+    async def update_avatar(user_id: int, avatar_url: str):
+        """
+        更新用户头像
+        """
+        try:
+            user = await User.get(id=user_id)
+            if not user:
+                raise ValueError("用户不存在")
+            
+            # 更新头像URL
+            user.avatar = avatar_url
+            await user.save()
+            
+            return True
+        except Exception as e:
+            raise Exception(f"更新头像失败: {str(e)}")
+
+    @staticmethod
+    async def reset_password(user_id: int, old_password: str, new_password: str) -> None:
+        """
+        重置用户密码
+        :param user_id: 用户ID
+        :param old_password: 旧密码
+        :param new_password: 新密码
+        :raises ValueError: 当旧密码验证失败时
+        """
+        # 获取用户信息
+        user = await UserDao.get_by_id(user_id)
+        if not user:
+            raise ValueError("用户不存在")
+        
+        # 验证旧密码
+        if not jwt.password_verify(old_password, user.password):
+            raise ValueError("旧密码不正确")
+        
+        # 生成新密码的哈希值
+        hashed_password = jwt.get_hash_password(new_password)
+        
+        # 更新密码
+        await UserDao.update_password(user_id, hashed_password)
+
+    @classmethod
+    async def update_teacher_info(cls, teacher_data: UpdateTeacherInfo):
+        """更新教师信息"""
+        try:
+            # 更新教师表
+            teacher = await Teacher.get(user_id=teacher_data.id)
+            if not teacher:
+                raise ValueError("教师不存在")
+            
+            # 更新教师信息
+            await Teacher.filter(user_id=teacher_data.id).update(
+                name=teacher_data.name,
+                department=teacher_data.department,
+                major=teacher_data.major,
+                title=teacher_data.title
+            )
+            
+            # 同步更新用户表中的用户名
+            await User.filter(id=teacher_data.id).update(username=teacher_data.name)
+            
+            return True
+        except Exception as e:
+            raise Exception(f"更新教师信息失败: {str(e)}")
+
+    @classmethod
+    async def update_student_info(cls, student_data: UpdateStudentInfo):
+        """更新学生信息"""
+        try:
+            # 更新学生表
+            student = await Student.get(user_id=student_data.id)
+            if not student:
+                raise ValueError("学生不存在")
+            
+            # 更新学生信息
+            await Student.filter(user_id=student_data.id).update(
+                name=student_data.name,
+                sno=student_data.sno,
+                department=student_data.department,
+                major=student_data.major,
+                grade=student_data.grade,
+                class_name=student_data.class_name
+            )
+            
+            # 同步更新用户表中的用户名
+            await User.filter(id=student_data.id).update(username=student_data.name)
+            
+            return True
+        except Exception as e:
+            raise Exception(f"更新学生信息失败: {str(e)}")
                         

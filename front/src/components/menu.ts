@@ -2,10 +2,22 @@ import { Menus } from "@/types/menu";
 
 export const menuData: Menus[] = [
   {
-    id: "0",
-    title: "系统首页",
-    index: "/dashboard",
-    icon: "Odometer",
+    id: "181",
+    icon: "Calendar",
+    index: "/admin/guide",
+    title: "管理员端指南",
+  },
+  {
+    id: "191",
+    icon: "Calendar",
+    index: "/teacher/guide",
+    title: "老师端指南",
+  },
+  {
+    id: "201",
+    icon: "Calendar",
+    index: "/student/guide",
+    title: "学生端指南",
   },
   {
     id: "1",
@@ -14,16 +26,22 @@ export const menuData: Menus[] = [
     icon: "HomeFilled",
     children: [
       {
-        id: "11",
-        pid: "1",
-        index: "/system-user",
-        title: "用户管理",
-      },
-      {
         id: "12",
         pid: "1",
-        index: "/system-role",
+        index: "/management-allUsers",
         title: "角色管理",
+      },
+      {
+        id: "13",
+        pid: "1",
+        index: "/management-student",
+        title: "学生管理",
+      },
+      {
+        id: "14",
+        pid: "1",
+        index: "/management-teacher",
+        title: "老师管理",
       },
     ],
   },
@@ -103,38 +121,40 @@ export const menuData: Menus[] = [
       },
     ],
   },
+
   {
-    id: "3",
-    title: "表格",
-    index: "3",
-    icon: "Calendar",
+    id: "33",
+    icon: "Guide",
+    index: "/importScore",
+    title: "成绩管理",
+  },
+  {
+    id: "16",
+    icon: "Guide",
+    index: "16",
+    title: "审核管理",
     children: [
       {
-        id: "31",
-        pid: "3",
-        index: "/table",
-        title: "基础表格",
+        id: "161",
+        pid: "Calendar",
+        index: "/activity/reviewActivity",
+        title: "审核学生活动申请",
       },
       {
-        id: "32",
-        pid: "3",
-        index: "/table-editor",
-        title: "可编辑表格",
-      },
-      {
-        id: "33",
-        pid: "3",
-        index: "/import",
-        title: "导入Excel",
-      },
-      {
-        id: "34",
-        pid: "3",
-        index: "/export",
-        title: "导出Excel",
+        id: "162",
+        pid: "Calendar",
+        index: "/activity/reviewScore",
+        title: "审核学生成绩疑惑",
       },
     ],
   },
+  {
+    id: "34",
+    icon: "Guide",
+    index: "/exportComprehensive",
+    title: "综测管理",
+  },
+
   {
     id: "4",
     icon: "PieChart",
@@ -158,16 +178,141 @@ export const menuData: Menus[] = [
   {
     id: "5",
     icon: "Guide",
-    index: "/announcement",
-    title: "公告",
-    permiss: "5",
+    index: "5",
+    title: "公告管理",
+    children: [
+      {
+        id: "51",
+        pid: "5",
+        index: "/announcement/activity",
+        title: "活动公告",
+      },
+      {
+        id: "52",
+        pid: "5",
+        index: "/announcement/scholarship",
+        title: "奖学金公告",
+      },
+      {
+        id: "53",
+        pid: "5",
+        index: "/announcement/school",
+        title: "学校公告",
+      },
+    ],
+  },
+  {
+    id: "9",
+    icon: "Guide",
+    index: "9",
+    title: "查看公告",
+    children: [
+      {
+        id: "91",
+        pid: "9",
+        index: "/showAnnouncement/school",
+        title: "学校公告",
+      },
+      {
+        id: "92",
+        pid: "9",
+        index: "/showAnnouncement/scholarship",
+        title: "奖学金公告",
+      },
+      // {
+      //   id: "93",
+      //   pid: "9",
+      //   index: "/showAnnouncement/activate",
+      //   title: "活动公告",
+      // },
+    ],
+  },
+  // {
+  //   id: "10",
+  //   icon: "Calendar",
+  //   index: "/activity/activity",
+  //   title: "活动",
+  // },
+  {
+    id: "171",
+    icon: "Guide",
+    index: "/college/collegeMajor",
+    title: "学院管理",
+  },
+  {
+    id: "11",
+    icon: "Guide",
+    index: "11",
+    title: "查看活动",
+    children: [
+      {
+        id: "111",
+        pid: "Calendar",
+        index: "/activity/showActivity",
+        title: "查看活动",
+      },
+      {
+        id: "113",
+        pid: "Calendar",
+        index: "/activity/otherActivity",
+        title: "其他活动加分申请",
+      },
+      {
+        id: "112",
+        pid: "Calendar",
+        index: "/activity/reviewMessage",
+        title: "查看活动审核结果",
+      },
+    ],
+  },
+
+  {
+    id: "13",
+    icon: "Guide",
+    index: "13",
+    title: "课程管理",
+    children: [
+      {
+        id: "131",
+        pid: "Calendar",
+        index: "/importSession",
+        title: "导入课程",
+      },
+    ],
+  },
+  {
+    id: "8",
+    icon: "Calendar",
+    index: "/showComprehensive",
+    title: "查看成绩",
+    children: [
+      {
+        id: "81",
+        pid: "8",
+        index: "/showComprehensive",
+        title: "查看综测成绩",
+      },
+      {
+        id: "82",
+        pid: "8",
+        index: "/reviewResult",
+        title: "查看综测审核结果",
+      },
+    ],
   },
   {
     id: "7",
     icon: "Brush",
     index: "/theme",
-    title: "主题",
+    title: "主题管理",
   },
+  {
+    id: "151",
+    icon: "Calendar",
+    index: "/ucenter",
+    title: "个人中心",
+  },
+
   {
     id: "6",
     icon: "DocumentAdd",

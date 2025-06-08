@@ -1,6 +1,5 @@
 <template>
   <div>
-    <TableSearch :query="query" :options="searchOpt" :search="handleSearch" />
     <div class="container">
       <TableCustom
         :columns="columns"
@@ -88,9 +87,7 @@ import { FormOption, FormOptionList } from "@/types/form-option";
 const query = reactive({
   name: "",
 });
-const searchOpt = ref<FormOptionList[]>([
-  { type: "input", label: "角色名称：", prop: "name" },
-]);
+
 const handleSearch = () => {
   changePage(1);
 };

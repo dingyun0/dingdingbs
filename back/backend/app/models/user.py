@@ -15,8 +15,10 @@ class User(Model):
     username = fields.CharField(max_length=32, unique=True, description='用户名')
     password = fields.CharField(max_length=255, description='密码')
     roles = fields.CharField(max_length=255, default="student", description='角色')
+    sno = fields.CharField(max_length=50, null=True, unique=True, description='学号')
     joined_time = fields.DatetimeField(auto_now_add=True, description='注册时间')
     last_login_time = fields.DatetimeField(null=True, description='上次登录时间')
+    avatar = fields.CharField(max_length=255, null=True, description="头像URL")
 
     def __str__(self):
         """定义模型的字符串表示"""
@@ -32,6 +34,7 @@ class User(Model):
             f"last_login_time='{self.last_login_time}'"
             f")"
         )
-
     class Meta:
         table = 'user'
+        table_description = "用户表"
+

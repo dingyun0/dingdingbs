@@ -3,7 +3,8 @@
 import datetime
 
 from email_validator import EmailNotValidError, validate_email
-from pydantic import UUID4, ConfigDict, EmailStr, field_validator, BaseModel
+from pydantic import UUID4, ConfigDict, EmailStr, field_validator, BaseModel, Field
+from typing import Optional, List
 
 from backend.app.schemas.base import SchemaBase
 
@@ -27,9 +28,15 @@ class Auth2(Auth):
 
 
 class CreateUser(SchemaBase):
+    """注册请求体"""
     username: str
     password: str
     confirmPassword: str
+    sno: str
+    department: str
+    major: str
+    grade: str
+    class_name: str
 
 class UserInfo(SchemaBase):
     username: str
@@ -75,3 +82,41 @@ class UpdateUserRole(SchemaBase):
     """更新用户角色请求体"""
     id: str
     roles: str
+
+
+class UpdateTeacherRole(SchemaBase):
+    id: int
+    roles: str
+    department: str
+    major: str
+    title: str
+    name:str
+
+
+class PasswordResetRequest(BaseModel):
+    old: str = Field(..., description="旧密码")
+    new: str = Field(..., min_length=6, max_length=20, description="新密码")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "old": "oldpassword123",
+                "new": "newpassword123"
+            }
+        }
+
+class UpdateTeacherInfo(BaseModel):
+    id: int
+    name: str
+    department: str
+    major: str
+    title: Optional[str] = None
+
+class UpdateStudentInfo(BaseModel):
+    id: int
+    name: str
+    sno: str
+    department: str
+    major: str
+    grade: str
+    class_name: str
