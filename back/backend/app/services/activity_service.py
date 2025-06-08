@@ -107,6 +107,21 @@ class ActivityService:
             return {"code": 500, "msg": f"申请失败: {str(e)}", "data": None}
     
     @staticmethod
+    async def apply_other_activity(apply_data: ActivityApply):
+        """申请其他活动"""
+        try:
+
+            # 创建申请记录
+            print('3333333333',apply_data)
+            result = await ActivityDAO.create_apply(apply_data)
+    
+            
+            return {"code": 200, "msg": "申请成功", "data": result}
+        except Exception as e:
+            print("申请活动失败:", str(e))
+            return {"code": 500, "msg": f"申请失败: {str(e)}", "data": None}
+    
+    @staticmethod
     async def get_review_activities(teacher_id: int):
         """获取教师需要审核的活动列表"""
         try:

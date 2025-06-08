@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from tortoise.transactions import atomic
 import json
 import logging
@@ -7,7 +7,7 @@ from datetime import datetime
 from backend.app.dao.base import DaoBase
 from backend.app.models.score import Score
 from backend.app.models.score_review import ReviewScore
-from backend.app.schemas.score import ScoreBase, ScoreReview, ScoreReviewResult
+from backend.app.schemas.score import ScoreBase, ScoreReview, ScoreReviewResult, ScoreCreate, ScoreUpdate
 
 
 class ScoreDao(DaoBase):
@@ -226,5 +226,25 @@ class ScoreDao(DaoBase):
         except Exception as e:
             logging.error(f"获取学院成绩信息失败: {str(e)}", exc_info=True)
             raise
+
+    async def update_score(self, score_data: Dict) -> bool:
+        """更新成绩记录"""
+        try:
+            print(score_data,'22222222222')
+            await self.model.filter(sno=score_data["sno"]).update(**score_data)
+            return True
+        except Exception as e:
+            print(f"更新成绩失败: {str(e)}")
+            return False
+
+    async def add_score(self, score_data: Dict) -> bool:
+        """添加成绩记录"""
+        try:
+            await self.model.create(**score_data)
+            return True
+        except Exception as e:
+            print(f"添加成绩失败: {str(e)}")
+            return False
+
 # 创建全局实例
 score_dao = ScoreDao()

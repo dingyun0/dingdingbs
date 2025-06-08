@@ -136,7 +136,9 @@
             </el-tag>
           </el-form-item>
           <el-form-item label="审核意见">
-            <div class="content-box">{{ currentReview?.review_comment }}</div>
+            <div class="review-comment">
+              {{ currentReview?.review_comment }}
+            </div>
           </el-form-item>
         </template>
       </el-form>
@@ -394,5 +396,16 @@ onMounted(() => {
 
 :deep(.el-form-item.is-required .el-form-item__label::before) {
   margin-right: 2px;
+}
+
+.review-comment {
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  min-height: 60px;
+  line-height: 1.6;
+  color: #606266;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 </style>

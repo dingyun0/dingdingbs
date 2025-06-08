@@ -22,7 +22,7 @@ from backend.app.models.student import Student
 
 from backend.app.models.teacher import Teacher
 from backend.app.schemas.user import (Auth, Auth2, CreateUser, ResetPassword,
-                                      UpdateUser)
+                                      UpdateUser, UpdateTeacherInfo, UpdateStudentInfo)
 from backend.app.utils import re_verify
 from backend.app.utils.format_string import cut_path
 from backend.app.utils.generate_string import get_current_timestamp
@@ -901,4 +901,54 @@ class UserService:
         
         # 更新密码
         await UserDao.update_password(user_id, hashed_password)
+
+    @classmethod
+    async def update_teacher_info(cls, teacher_data: UpdateTeacherInfo):
+        """更新教师信息"""
+        try:
+            # 更新教师表
+            teacher = await Teacher.get(user_id=teacher_data.id)
+            if not teacher:
+                raise ValueError("教师不存在")
+            
+            # 更新教师信息
+            await Teacher.filter(user_id=teacher_data.id).update(
+                name=teacher_data.name,
+                department=teacher_data.department,
+                major=teacher_data.major,
+                title=teacher_data.title
+            )
+            
+            # 同步更新用户表中的用户名
+            await User.filter(id=teacher_data.id).update(username=teacher_data.name)
+            
+            return True
+        except Exception as e:
+            raise Exception(f"更新教师信息失败: {str(e)}")
+
+    @classmethod
+    async def update_student_info(cls, student_data: UpdateStudentInfo):
+        """更新学生信息"""
+        try:
+            # 更新学生表
+            student = await Student.get(user_id=student_data.id)
+            if not student:
+                raise ValueError("学生不存在")
+            
+            # 更新学生信息
+            await Student.filter(user_id=student_data.id).update(
+                name=student_data.name,
+                sno=student_data.sno,
+                department=student_data.department,
+                major=student_data.major,
+                grade=student_data.grade,
+                class_name=student_data.class_name
+            )
+            
+            # 同步更新用户表中的用户名
+            await User.filter(id=student_data.id).update(username=student_data.name)
+            
+            return True
+        except Exception as e:
+            raise Exception(f"更新学生信息失败: {str(e)}")
                         

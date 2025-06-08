@@ -12,7 +12,7 @@
         >
           <el-button class="mr10" type="success">批量导入</el-button>
         </el-upload>
-        <el-link href="/template_session.xlsx" target="_blank"
+        <el-link href="/template_sessions.xlsx" target="_blank"
           >下载模板</el-link
         >
         <el-button type="primary" @click="handleAdd" style="margin-left: 10px">

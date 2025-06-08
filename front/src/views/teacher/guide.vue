@@ -123,7 +123,7 @@ const functionGuides = [
     title: "成绩管理",
     icon: "Document",
     iconColor: "#409EFF",
-    path: "/importSession",
+    path: "/importScore",
     description: "管理学生成绩信息",
     features: [
       "成绩录入 - 支持单个和批量导入",

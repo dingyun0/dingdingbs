@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from backend.app.schemas.score import SaveScore, ScoreReview, ScoreReviewResult
+from backend.app.schemas.score import SaveScore, ScoreReview, ScoreReviewResult, ScoreCreate, ScoreUpdate
 from backend.app.services.score_service import ScoreService
 from backend.app.common.jwt import DependsJwtUser
 
@@ -104,3 +104,25 @@ async def get_college_scores(
     获取学院成绩信息
     """
     return await ScoreService.get_college_scores(department, major, grade)
+
+@router.post('/update_score', summary="修改成绩")
+async def update_score(score_data: ScoreUpdate, current_user = DependsJwtUser):
+    """
+    修改学生成绩
+    """
+    try:
+        result = await ScoreService.update_score(score_data)
+        return result
+    except Exception as e:
+        return {"code": 500, "msg": f"修改失败: {str(e)}", "data": None}
+
+@router.post('/add_score', summary="添加成绩")
+async def add_score(score_data: ScoreCreate, current_user = DependsJwtUser):
+    """
+    添加学生成绩
+    """
+    try:
+        result = await ScoreService.add_score(score_data)
+        return result
+    except Exception as e:
+        return {"code": 500, "msg": f"添加失败: {str(e)}", "data": None}

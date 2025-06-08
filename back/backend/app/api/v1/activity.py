@@ -56,6 +56,26 @@ async def apply_activity(apply_data: ActivityApply):
         print("申请活动接口错误:", str(e))
         return {"code": 500, "msg": f"申请失败: {str(e)}", "data": None}
 
+@router.post('/applyOtherActivity', summary="存储申请其他活动信息")
+async def apply_other_activity(apply_data: ActivityApply):
+    """
+    申请活动接口
+    - activity_id: 活动ID
+    - activity_title: 活动名称
+    - teacher_id: 审核老师ID
+    - student_sno: 申请学生学号
+    - activity_category: 活动类型
+    - credits: 活动分数
+    - proof_files: 证明材料图片URL (可选)
+    - comment: 申请描述 (可选)
+    """
+    try:
+        result = await ActivityService.apply_other_activity(apply_data)
+        return result
+    except Exception as e:
+        print("申请活动接口错误:", str(e))
+        return {"code": 500, "msg": f"申请失败: {str(e)}", "data": None}
+
 @router.get('/getReviewActivity', summary="获取要审核的活动列表")
 async def review_activity(current_user = DependsJwtUser):
     """
@@ -64,10 +84,10 @@ async def review_activity(current_user = DependsJwtUser):
     try:
         # 从Teacher表中获取教师ID
         teacher = await Teacher.get_or_none(user_id=current_user.id)
-        print('111111111',teacher.id)
         if not teacher:
             return {"code": 400, "msg": "未找到教师信息", "data": None}
-            
+        
+        # Only access teacher.id after confirming teacher exists
         return await ActivityService.get_review_activities(teacher.id)
     except Exception as e:
         print("获取审核列表失败:", str(e))

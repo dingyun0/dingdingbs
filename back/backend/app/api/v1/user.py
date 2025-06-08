@@ -14,7 +14,7 @@ from backend.app.models.user import User
 from backend.app.common.jwt import CurrentUser, DependsJwtUser, get_current_user
 from backend.app.common.pagination import DependsPagination, paging_data
 from backend.app.common.response.response_schema import response_base
-from backend.app.schemas.user import CreateUser,UserInfo,Auth,GetUserInfo, ResetPassword, UpdateUser, UpdateUserRole, UpdateTeacherRole
+from backend.app.schemas.user import CreateUser,UserInfo,Auth,GetUserInfo, ResetPassword, UpdateUser, UpdateUserRole, UpdateTeacherRole, UpdateTeacherInfo, UpdateStudentInfo
 from backend.app.services.user_service import UserService
 from backend.app.common.exception.errors import CustomError
 from backend.app.models.teacher import Teacher
@@ -142,6 +142,40 @@ async def update_teacher_role(teacher_data: UpdateTeacherRole):
                 "name":teacher_data.name
             }
         )
+        return await response_base.success(data=result, msg="更新成功")
+    except Exception as e:
+        return await response_base.fail(msg=f"更新失败: {str(e)}")
+
+@router.put('/update_teacher_info', summary='修改教师信息')
+async def update_teacher_info(teacher_data: UpdateTeacherInfo):
+    """
+    修改教师信息
+    - id: 教师ID
+    - name: 教师姓名
+    - department: 学院
+    - major: 专业
+    - title: 职称
+    """
+    try:
+        result = await UserService.update_teacher_info(teacher_data)
+        return await response_base.success(data=result, msg="更新成功")
+    except Exception as e:
+        return await response_base.fail(msg=f"更新失败: {str(e)}")
+
+@router.put('/update_student_info', summary='修改学生信息')
+async def update_student_info(student_data: UpdateStudentInfo):
+    """
+    修改学生信息
+    - id: 学生ID
+    - name: 学生姓名
+    - sno: 学号
+    - department: 学院
+    - major: 专业
+    - grade: 年级
+    - class_name: 班级
+    """
+    try:
+        result = await UserService.update_student_info(student_data)
         return await response_base.success(data=result, msg="更新成功")
     except Exception as e:
         return await response_base.fail(msg=f"更新失败: {str(e)}")

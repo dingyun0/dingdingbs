@@ -1,7 +1,7 @@
 from backend.app.models.score import Score
 from backend.app.dao.score_dao import score_dao
 from backend.app.dao.session_dao import session_dao
-from backend.app.schemas.score import SaveScore, ScoreReview, ScoreReviewResult
+from backend.app.schemas.score import SaveScore, ScoreReview, ScoreReviewResult, ScoreUpdate, ScoreCreate
 from backend.app.common.exception.errors import CustomError
 import logging
 import json
@@ -299,3 +299,39 @@ class ScoreService:
                 "message": f"获取失败: {str(e)}",
                 "data": None
             }
+
+    @staticmethod
+    async def update_score(score_data: ScoreUpdate):
+        """更新学生成绩"""
+        try:
+            # 转换数据格式
+            data = score_data.model_dump()
+            
+            # 从数据中提取 scores 字段
+            scores = data.pop('scores', {})
+            
+            # 将 scores 字典中的成绩合并到主数据中
+            update_data = {**data, **scores}
+            
+            # 执行更新
+            success = await score_dao.update_score(update_data)
+            if success:
+                return {"code": 200, "msg": "更新成功", "data": None}
+            return {"code": 500, "msg": "更新失败", "data": None}
+        except Exception as e:
+            logging.error(f"更新成绩失败: {str(e)}", exc_info=True)
+            return {"code": 500, "msg": f"更新失败: {str(e)}", "data": None}
+
+    @staticmethod
+    async def add_score(score_data: ScoreCreate):
+        """添加学生成绩"""
+        try:
+            # 转换数据格式
+            create_data = score_data.model_dump()
+            # 执行创建
+            success = await score_dao.add_score(create_data)
+            if success:
+                return {"code": 200, "msg": "添加成功", "data": None}
+            return {"code": 500, "msg": "添加失败", "data": None}
+        except Exception as e:
+            return {"code": 500, "msg": f"添加失败: {str(e)}", "data": None}

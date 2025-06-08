@@ -126,7 +126,7 @@ import type {
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useUserStore } from "@/store/user";
 import { getTeacherNameReq } from "@/api/index";
-import { applyActivityReq } from "@/api/activity";
+import { applyActivityReq, applyOtherActivityReq } from "@/api/activity";
 import { getImageUrl } from "@/api/image";
 
 // 表单引用
@@ -208,6 +208,14 @@ const rules = reactive<FormRules>({
 const fileList = ref<UploadUserFile[]>([]);
 const previewVisible = ref(false);
 const previewUrl = ref("");
+
+// 活动类型映射
+const activityTypeMap = {
+  学业: "academic",
+  文体: "sports",
+  劳动: "labor",
+  创新: "innovation",
+};
 
 // 文件上传前的验证
 const beforeUpload: UploadProps["beforeUpload"] = (file) => {
@@ -293,7 +301,8 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         const submitData = {
           activity_id: 1, // 添加activity_id字段，设为0表示自定义活动
           activity_title: formData.activityName,
-          activity_category: formData.activityType,
+          activity_category:
+            activityTypeMap[formData.activityType] || formData.activityType, // 转换活动类型为英文
           teacher_id: formData.teacherId,
           credits: String(formData.credits), // 将数字转换为字符串
           student_sno: userStore.sno,
@@ -302,7 +311,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         };
 
         // 使用applyActivityReq API提交申请
-        const response = await applyActivityReq(submitData);
+        const response = await applyOtherActivityReq(submitData);
 
         if (response.data.code === 200) {
           ElMessage.success("申请提交成功！");

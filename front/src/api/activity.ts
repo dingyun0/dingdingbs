@@ -42,6 +42,14 @@ export function applyActivityReq(data: any) {
   });
 }
 
+export function applyOtherActivityReq(data: any) {
+  return request({
+    url: "/activity/applyOtherActivity",
+    method: "post",
+    data: data,
+  });
+}
+
 export function getReviewListReq() {
   return request({
     url: "/activity/getReviewActivity",

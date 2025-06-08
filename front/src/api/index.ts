@@ -104,6 +104,21 @@ export const updateUserRoleReq = (data: { id: number; roles: string }) => {
   });
 };
 
+export const updateTeacherInfo = (data: any) => {
+  return request({
+    url: "users/update_teacher_info",
+    method: "put",
+    data: data,
+  });
+};
+
+export const updateStudentInfo = (data: any) => {
+  return request({
+    url: "users/update_student_info",
+    method: "put",
+    data: data,
+  });
+};
 // 更新用户角色和教师信息
 export const updateTeacherRoleReq = (data: {
   id: number;

@@ -130,7 +130,7 @@ const functionGuides = [
     title: "系统管理",
     icon: "Setting",
     iconColor: "#409EFF",
-    path: "/management-student",
+    path: "/management-allUsers",
     description: "管理系统用户和权限",
     features: [
       "角色管理 - 分配不同角色的权限",

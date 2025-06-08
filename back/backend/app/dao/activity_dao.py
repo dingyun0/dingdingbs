@@ -83,7 +83,7 @@ class ActivityDAO:
         print('222222222',teacher_id)
         return await ActivityReview.filter(
             teacher_id=teacher_id,
-            review_comment="审核中"
+            
         ).order_by("-apply_time")
 
     @staticmethod

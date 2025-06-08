@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field, create_model
 from backend.app.schemas.base import SchemaBase
 from datetime import datetime
@@ -9,6 +9,7 @@ class ScoreBase(SchemaBase):
     department: str
     major: str
     grade: str
+    # 用于存储动态课程成绩
     
     @classmethod
     def create_dynamic_model(cls, course_fields: List[str]):
@@ -73,3 +74,48 @@ class ScoreReviewResult(BaseModel):
     review_id: int = Field(..., description="成绩疑问ID")
     status: str = Field(..., description="审核状态：approved-通过，rejected-驳回")
     comment: str = Field(..., description="审核意见")
+
+class ScoreCreate(SchemaBase):
+    sno: str
+    name: str
+    department: str
+    major: str
+    grade: str
+    scores: Dict[str, str]
+
+class ScoreUpdate(SchemaBase):
+    sno: str
+    name: str
+    department: str
+    major: str
+    grade: str
+    scores: Dict[str, str]
+    
+    @classmethod
+    def create_dynamic_model(cls, course_fields: List[str]):
+        """
+        动态创建包含指定课程字段的模型
+        
+        Args:
+            course_fields: 课程字段列表
+            
+        Returns:
+            动态创建的模型类
+        """
+        field_definitions = {
+            "name": (str, ...),
+            "sno": (str, ...),
+            "department": (str, ...),
+            "major": (str, ...),
+            "grade": (str, ...),
+        }
+        
+        # 添加动态课程字段
+        for field in course_fields:
+            field_definitions[field] = (str | None, None)
+            
+        return create_model(
+            "DynamicScoreBase",
+            **field_definitions,
+            __base__=SchemaBase
+        )

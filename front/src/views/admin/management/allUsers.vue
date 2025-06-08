@@ -1,6 +1,5 @@
 <template>
   <div>
-    <TableSearch :query="query" :options="searchOpt" :search="handleSearch" />
     <div class="container">
       <TableCustom
         :columns="columns"
@@ -121,9 +120,7 @@ const getMajors = (department: string) => {
 const query = reactive({
   name: "",
 });
-const searchOpt = ref<FormOptionList[]>([
-  { type: "input", label: "用户名：", prop: "name" },
-]);
+
 const handleSearch = () => {
   changePage(page.index);
 };

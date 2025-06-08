@@ -4,6 +4,7 @@ import datetime
 
 from email_validator import EmailNotValidError, validate_email
 from pydantic import UUID4, ConfigDict, EmailStr, field_validator, BaseModel, Field
+from typing import Optional, List
 
 from backend.app.schemas.base import SchemaBase
 
@@ -103,3 +104,19 @@ class PasswordResetRequest(BaseModel):
                 "new": "newpassword123"
             }
         }
+
+class UpdateTeacherInfo(BaseModel):
+    id: int
+    name: str
+    department: str
+    major: str
+    title: Optional[str] = None
+
+class UpdateStudentInfo(BaseModel):
+    id: int
+    name: str
+    sno: str
+    department: str
+    major: str
+    grade: str
+    class_name: str

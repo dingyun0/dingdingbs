@@ -69,3 +69,37 @@ export const getCollegeScores = (data) => {
     params: data,
   });
 };
+
+export const updateScore = (data: any) => {
+  return request({
+    method: "post",
+    url: "/scores/update_score",
+    params: data,
+  });
+};
+
+export const addScore = (data: any) => {
+  return request({
+    method: "post",
+    url: "/scores/add_score",
+    params: data,
+  });
+};
+
+// 更新成绩
+export const updateScoreReq = (data: any) => {
+  return request({
+    url: "/scores/update_score",
+    method: "post",
+    data,
+  });
+};
+
+// 添加成绩
+export const addScoreReq = (data: any) => {
+  return request({
+    url: "/scores/add_score",
+    method: "post",
+    data,
+  });
+};

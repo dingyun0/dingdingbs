@@ -249,6 +249,7 @@ const getActivityScores = async (
       student_sno: sno,
       activity_category: category,
     });
+    console.log(response.data.data, "44444444444444");
 
     if (response.data.code === 200) {
       // 计算该类型的总加分
